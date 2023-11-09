@@ -1,0 +1,21 @@
+[package]
+# We need to use a different name for the binary than for the library
+name = "edamame_helper_windows"
+version = "0.3.0"
+edition = "2021"
+authors = ["EDAMAME Technologies"]
+description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
+
+# Disconnect this package from the global package index
+[workspace]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+edamame_helper = { path = "../../../edamame/rust/edamame_helper" }
+
+windows-service = "0.6.0"
+
+cargo-wix = "0.3.4"

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TARGET="/Library/Application Support/EDAMAME/EDAMAME-Helper"
+
+if /bin/launchctl list "com.edamametechnologies.edamame-helper" &>/dev/null; then
+	/bin/launchctl unload "/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
+	killall edamame_helper
+	sleep 2 
+	killall -9 edamame_helper
+	/bin/rm "/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
+fi
+
+if [[ -f "$TARGET" ]]; then
+	rm -rf "$TARGET"
+fi
+
+exit 0

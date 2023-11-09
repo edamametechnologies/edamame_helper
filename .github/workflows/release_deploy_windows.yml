@@ -1,0 +1,86 @@
+name: Publish Helper to AWS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'dev'
+      - 'main'
+
+# Auto cancel previous runs if they were not completed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Install additional packages w/ Chocolatey
+        run: |
+          choco install protoc wget
+          dotnet tool install --global AzureSignTool
+
+      - name: Setup for edamame_foundation
+        shell: bash
+        run: |
+          cd ..
+          git clone https://github.com/edamametechnologies/edamame_foundation.git
+          cd ./edamame_foundation
+          cat ./Cargo.toml | sed 's/\"staticlib\"/\"cdylib\"/g' > ./Cargo.toml.dynamic
+          cp ./Cargo.toml.dynamic ./Cargo.toml
+          ./update-threats.sh Windows
+
+      - name: Setup for edamame_helper
+        shell: bash
+        run: |
+          cat ./Cargo.toml | sed 's/\"staticlib\"/\"cdylib\"/g' > ./Cargo.toml.dynamic
+          cp ./Cargo.toml.dynamic ./Cargo.toml
+          cargo install cargo-wix
+          choco install wixtoolset
+          echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
+
+      - name: Build helper and its standalone installer
+        shell: bash
+        run: |
+          cd ./windows/edamame_helper_windows
+          cargo build --release
+          mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe
+          cargo wix --nocapture --no-build
+
+      - name: Signing of the Helper
+        shell: bash
+        run: |
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          AzureSignTool sign -kvt ${{ secrets.AZURE_AD_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
+
+      # Dev only (upload to dev folder)
+      - name: Upload helper to AWS
+        if: github.ref == 'refs/heads/dev'
+        shell: bash
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          export AWS_REGION=${{ secrets.AWS_REGION }}    
+          cd ./windows/edamame_helper_windows
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/dev/windows/edamame_helper-${VERSION}.msi --acl public-read
+
+      # Main only (upload to base folder)
+      - name: Upload helper to AWS
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          export AWS_REGION=${{ secrets.AWS_REGION }}  
+          cd ./windows/edamame_helper_windows
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/windows/edamame_helper-${VERSION}.msi --acl public-read

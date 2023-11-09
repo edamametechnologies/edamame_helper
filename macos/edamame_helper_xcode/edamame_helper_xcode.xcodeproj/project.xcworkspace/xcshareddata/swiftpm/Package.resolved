@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "swift-rs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/edamametechnologies/swift-rs",
+      "state" : {
+        "revision" : "5f982e872dd7e931a21010ec3cd54d2e76c581cc",
+        "version" : "1.0.6"
+      }
+    }
+  ],
+  "version" : 2
+}

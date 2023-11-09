@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.edamametechnologies.edamame-helper</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Application Support/EDAMAME/EDAMAME-Helper/edamame_helper</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/var/log/edamame_helper.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/edamame_helper.log</string>
+</dict>
+</plist>

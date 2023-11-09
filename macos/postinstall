@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/bin/launchctl load "/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
+
+exit 0
