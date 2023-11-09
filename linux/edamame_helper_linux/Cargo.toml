@@ -1,0 +1,25 @@
+[package]
+# We need to use a different name for the binary than for the library
+name = "edamame_helper_linux"
+version = "0.2.6"
+edition = "2021"
+authors = ["EDAMAME Technologies"]
+description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
+readme = "./README.md"
+license-file = "./LICENSE"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# Disconnect this package from the global package index
+[workspace]
+
+[dependencies]
+cargo-deb = "1.44.0"
+edamame_helper = { path = "../../../edamame/rust/edamame_helper" }
+
+# See cargo-deb crate for configuration: https://crates.io/crates/cargo-deb
+[package.metadata.deb]
+name = "edamame_helper_linux"
+license-file = ["LICENSE", "0"]
+maintainer-scripts = "debian/"
+systemd-units = { enable = true }

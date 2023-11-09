@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>EDAMAME Helper</title>
+    <organization>com.edamametechnologies</organization>
+    <domains enable_localSystem="true"/>
+    <background mime-type="image/png" file="banner.png" scaling="proportional" alignment="bottomleft" />
+    <background-darkAqua mime-type="image/png" file="banner.png" scaling="proportional" alignment="left" />
+    <options customize="never" require-scripts="true" rootVolumeOnly="true" />
+    <!-- Define documents displayed at various steps -->
+    <welcome    file="welcome.html"    mime-type="text/html" />
+    <conclusion    file="conclusion.html"    mime-type="text/html" />
+    <license file="license.txt"/>
+    <options customize="never" allow-external-scripts="no"/>
+    <!-- List all component packages -->
+    <pkg-ref id="com.edamametechnologies.edamame-helper"
+             version="0.2.3"
+             auth="root">edamame-helper-unsigned.pkg</pkg-ref>
+    <!-- List them again here. They can now be organized
+         as a hierarchy if you want. -->
+    <choices-outline>
+        <line choice="com.edamametechnologies.edamame-helper"/>
+    </choices-outline>
+    <!-- Define each choice above -->
+    <choice
+        id="com.edamametechnologies.edamame-helper"
+        visible="false"
+        title="EDAMAME Helper"
+        description="EDAMAME Helper"
+        start_selected="true">
+      <pkg-ref id="com.edamametechnologies.edamame-helper"/>
+    </choice>
+</installer-gui-script>
