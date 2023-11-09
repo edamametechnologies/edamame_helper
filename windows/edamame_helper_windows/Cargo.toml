@@ -14,7 +14,7 @@ description = "This system helper is required for advanced Security Score analys
 
 [dependencies]
 
-edamame_helper = { path = "../../../edamame/rust/edamame_helper" }
+edamame_helper = { path = "../.." }
 
 windows-service = "0.6.0"
 
