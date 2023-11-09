@@ -64,13 +64,6 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ../edamame_foundation/Cargo.toml | awk '{print $3}' | tr -d '"')
-          echo "Signing version ${VERSION}"
-          export AZURE_AD_TENANT_ID=${{ secrets.AZURE_AD_TENANT_ID }}    
-          export AZURE_KEY_VAULT_URI=${{ secrets.AZURE_KEY_VAULT_URI }}    
-          export AZURE_SIGN_CLIENT_ID=${{ secrets.AZURE_SIGN_CLIENT_ID }}    
-          export AZURE_SIGN_CLIENT_SECRET=${{ secrets.AZURE_SIGN_CLIENT_SECRET }}    
-          export AZURE_SIGN_CERT_NAME=${{ secrets.AZURE_SIGN_CERT_NAME }}    
-          echo AzureSignTool sign -kvt ${AZURE_AD_TENANT_ID} -kvu ${AZURE_KEY_VAULT_URI} -kvi ${AZURE_SIGN_CLIENT_ID} -kvs ${AZURE_SIGN_CLIENT_SECRET} -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
           AzureSignTool sign -kvt ${{ secrets.AZURE_AD_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
 
       # Dev only (upload to dev folder)
