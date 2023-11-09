@@ -50,6 +50,11 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: |
+          export EDAMAME_HELPER_SENTRY=${{ secrets.EDAMAME_HELPER_SENTRY }}    
+          export EDAMAME_SERVER=${{ secrets.EDAMAME_SERVER }}    
+          export EDAMAME_CLIENT_CA_PEM=${{ secrets.EDAMAME_CLIENT_CA_PEM }}    
+          export EDAMAME_SERVER_KEY=${{ secrets.EDAMAME_SERVER_KEY }}    
+          export EDAMAME_SERVER_PEM=${{ secrets.EDAMAME_SERVER_PEM }}    
           cd ./windows/edamame_helper_windows
           cargo build --release
           mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe
