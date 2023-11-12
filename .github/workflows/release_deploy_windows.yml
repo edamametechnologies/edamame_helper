@@ -76,7 +76,7 @@ jobs:
           export AWS_REGION=${{ secrets.AWS_REGION }}    
           cd ./windows/edamame_helper_windows
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/dev/windows/edamame_helper-${VERSION}.msi --acl public-read
+          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/dev/windows/edamame-helper-${VERSION}.msi --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -88,4 +88,4 @@ jobs:
           export AWS_REGION=${{ secrets.AWS_REGION }}  
           cd ./windows/edamame_helper_windows
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/windows/edamame_helper-${VERSION}.msi --acl public-read
+          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/windows/edamame-helper-${VERSION}.msi --acl public-read

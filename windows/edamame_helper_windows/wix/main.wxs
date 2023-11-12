@@ -63,7 +63,7 @@
 
     <Product
         Id='*'
-        Name='edamame_helper'
+        Name='EDAMAME Helper'
         UpgradeCode='C6F376A1-D402-4BEB-AFEA-52DD28F265E4'
         Manufacturer='EDAMAME Technologies'
         Language='1033'
@@ -87,7 +87,7 @@
             AllowSameVersionUpgrades='yes'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='edamame_helper Installation'/>
+        <Property Id='DiskPrompt' Value='EDAMAME Helper Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
