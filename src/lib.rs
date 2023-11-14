@@ -41,10 +41,13 @@ pub fn start_server() {
         mdns_start().await
     });
 
+    // Branch (needs to be gathered within the target executable's crate)
+    let branch = env!("VERGEN_GIT_BRANCH");
+
     // RPC server
     async_exec(async {
 
-        match SERVER_CONTROL.lock().await.start_server(EDAMAME_SERVER_PEM, EDAMAME_SERVER_KEY, EDAMAME_CLIENT_CA_PEM, EDAMAME_SERVER).await {
+        match SERVER_CONTROL.lock().await.start_server(EDAMAME_SERVER_PEM, EDAMAME_SERVER_KEY, EDAMAME_CLIENT_CA_PEM, EDAMAME_SERVER, branch).await {
             Ok(_) => info!("Server started"),
             Err(e) => error!("Server start error: {}", e),
         }
