@@ -55,11 +55,11 @@ jobs:
         run: |
           # ----- Create certificate files from secrets base64 -----
           echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_CER }} | base64 --decode > certificate_dev.cer
-          echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_CER }} | base64 --decode > certificate_dev.key
+          echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_KEY }} | base64 --decode > certificate_dev.key
           echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_CER }} | base64 --decode > certificate_installer.cer
-          echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_CER }} | base64 --decode > certificate_installer.key
+          echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_KEY }} | base64 --decode > certificate_installer.key
           echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CER }} | base64 --decode > certificate_application.cer
-          echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CER }} | base64 --decode > certificate_application.key
+          echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_KEY }} | base64 --decode > certificate_application.key
           
           # ----- Create p12 file -----
           openssl pkcs12 -export -name zup -in certificate_dev.cer -inkey certificate_dev.key -passin pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }} -out certificate_dev.p12 -passout pass:${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
