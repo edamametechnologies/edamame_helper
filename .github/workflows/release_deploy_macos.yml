@@ -23,7 +23,7 @@ permissions: read-all
 
 jobs:
   build:
-    runs-on: macos-11
+    runs-on: macos-latest
 
     steps:
       - name: Check out Git repository
