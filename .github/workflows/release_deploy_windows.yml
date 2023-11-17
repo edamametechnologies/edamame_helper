@@ -100,6 +100,7 @@ jobs:
       - name: Check for existing release
         if: github.ref == 'refs/heads/main'
         id: get_release
+        shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
@@ -117,6 +118,7 @@ jobs:
       - name: Create release if it doesn't exist
         if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
         id: create_release
+        shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
@@ -126,6 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload asset to release
+        shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           cd ./windows/edamame_helper_windows
