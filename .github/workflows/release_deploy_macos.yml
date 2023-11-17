@@ -77,14 +77,12 @@ jobs:
           security import certificate_installer.p12 -P "${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security import certificate_application.p12 -P "${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
 
-          # Store notarization credentials
-          echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
-          xcrun notarytool store-credentials --help
-          xcrun notarytool notarytool submit --help
-          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} --keychain-profile Edamame
-
           # Verify Keychain
           security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Store notarization credentials
+          echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
+          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} Edamame
 
       - name: Build helper and its standalone installer
         shell: bash
