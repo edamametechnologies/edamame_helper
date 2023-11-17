@@ -51,6 +51,7 @@ jobs:
           cp ./Cargo.toml.static ./Cargo.toml
 
       - name: Setup signing
+        shell: bash
         run: |
           # ----- Create certificate files from secrets base64 -----
           echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_CER }} | base64 --decode > certificate_dev.cer
