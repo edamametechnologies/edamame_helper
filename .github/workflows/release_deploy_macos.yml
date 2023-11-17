@@ -53,7 +53,7 @@ jobs:
       - name: Setup signing
         shell: bash
         run: |
-          # ----- Create certificate files from secrets base64 -----
+          # Create certificate files from secrets base64
           echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_CER }} | base64 --decode > certificate_dev.cer
           echo ${{ secrets.APPLE_MAC_DEVELOPEMENT_KEY }} | base64 --decode > certificate_dev.key
           echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_CER }} | base64 --decode > certificate_installer.cer
@@ -61,21 +61,27 @@ jobs:
           echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CER }} | base64 --decode > certificate_application.cer
           echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_KEY }} | base64 --decode > certificate_application.key
           
-          # ----- Create p12 file -----
+          # Create p12 file
           openssl pkcs12 -export -name zup -in certificate_dev.cer -inkey certificate_dev.key -passin pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }} -out certificate_dev.p12 -passout pass:${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
           openssl pkcs12 -export -name zup -in certificate_installer.cer -inkey certificate_installer.key -passin pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }} -out certificate_installer.p12 -passout pass:${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
           openssl pkcs12 -export -name zup -in certificate_application.cer -inkey certificate_application.key -passin pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }} -out certificate_application.p12 -passout pass:${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
           
-          # ----- Configure Keychain -----
+          # Configure Keychain
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           security create-keychain -p "${{ secrets.MACOS_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "${{ secrets.MACOS_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
           
-          # ----- Import certificates on Keychain -----
+          # Import certificates on Keychain
           security import certificate_dev.p12 -P "${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security import certificate_installer.p12 -P "${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security import certificate_application.p12 -P "${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+
+          # Store notarization credentials
+          echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
+          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} --keychain $KEYCHAIN_PATH
+
+          # Verify Keychain
           security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Build helper and its standalone installer
@@ -97,13 +103,12 @@ jobs:
           ./make-pkg.sh && ./make-distribution-pkg.sh
           ./make-pkg.sh && ./make-distribution-pkg.sh
           
-      - name: Notarization of the package
-        uses:  GuillaumeFalourd/xcode-notarize@v1
-        with:
-          product-path: ./macos/target/edamame-helper.pkg
-          appstore-connect-username: ${{ secrets.APPLE_ACCOUNT_USERNAME }}
-          appstore-connect-password: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
-          primary-bundle-id: 'BUNDLE_ID'
+      - name: Notarization
+        shell: bash
+        run: |          
+          cd ./macos
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          ./notarization.sh $KEYCHAIN_PATH
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
