@@ -105,8 +105,11 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
           RELEASE_ID=$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)
+          echo "RELEASE_ID=" $RELEASE_ID
           if [[ -n "$RELEASE_ID" ]]; then
             echo "::set-output name=exists::true"
+            UPLOAD_URL=$(gh release view $RELEASE_ID --json uploadUrl -q .uploadUrl)
+            echo "UPLOAD_URL=" $(UPLOAD_URL)
             echo "::set-output name=upload_url::$(gh release view $RELEASE_ID --json uploadUrl -q .uploadUrl)"
           else
             echo "::set-output name=exists::false"
@@ -135,9 +138,6 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           cd ./windows/edamame_helper_windows
           cp ./target/wix/edamame_helper*.msi ./target/wix/edamame-helper-${VERSION}.msi
-          echo "steps.get_release.outputs.exists: " ${{ steps.get_release.outputs.exists }}
-          echo "steps.get_release.outputs.upload_url: " ${{ steps.get_release.outputs.upload_url }}
-          echo "steps.create_release.outputs.upload_url: " ${{ steps.create_release.outputs.upload_url }}
           gh release upload ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }} ./target/wix/edamame-helper-${VERSION}.msi --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
