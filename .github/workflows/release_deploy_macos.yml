@@ -81,7 +81,7 @@ jobs:
           echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
           xcrun notarytool store-credentials --help
           xcrun notarytool notarytool submit --help
-          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} --keychain $KEYCHAIN_PATH
+          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} --keychain-profile Edamame
 
           # Verify Keychain
           security list-keychain -d user -s $KEYCHAIN_PATH
@@ -110,7 +110,7 @@ jobs:
         run: |          
           cd ./macos
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          ./notarization.sh $KEYCHAIN_PATH
+          ./notarization.sh
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
