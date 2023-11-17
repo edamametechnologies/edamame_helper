@@ -98,7 +98,7 @@ jobs:
 
       # Main only
       - name: Check for existing release
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         id: get_release
         shell: bash
         run: |
@@ -116,7 +116,8 @@ jobs:
 
       # Main only
       - name: Create release if it doesn't exist
-        if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
+        #if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
+        if: steps.get_release.outputs.exists != 'true'
         id: create_release
         shell: bash
         run: |
@@ -128,7 +129,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload asset to release
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
