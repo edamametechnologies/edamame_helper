@@ -134,6 +134,9 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           cd ./windows/edamame_helper_windows
           cp ./target/wix/edamame_helper*.msi ./target/wix/edamame-helper-${VERSION}.msi
+          echo "steps.get_release.outputs.exists: " ${{ steps.get_release.outputs.exists }}
+          echo "steps.get_release.outputs.upload_url: " ${{ steps.get_release.outputs.upload_url }}
+          echo "steps.create_release.outputs.upload_url: " ${{ steps.create_release.outputs.upload_url }}
           gh release upload ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }} ./target/wix/edamame-helper-${VERSION}.msi --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
