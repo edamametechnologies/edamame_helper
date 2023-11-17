@@ -6,6 +6,12 @@ on:
     branches:
       - 'dev'
       - 'main'
+    paths-ignore:
+      - 'macos/**'
+      - 'linux/**'
+      - 'snap/**'
+      - .github/workflows/release_deploy_macos.yml
+      - .github/workflows/release_deploy_linux.yml
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
@@ -74,8 +80,8 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}    
-          cd ./windows/edamame_helper_windows
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          cd ./windows/edamame_helper_windows
           aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/dev/windows/edamame-helper-${VERSION}.msi --acl public-read
 
       # Main only (upload to base folder)
@@ -86,6 +92,6 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}  
-          cd ./windows/edamame_helper_windows
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          cd ./windows/edamame_helper_windows
           aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/windows/edamame-helper-${VERSION}.msi --acl public-read
