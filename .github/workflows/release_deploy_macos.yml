@@ -1,4 +1,4 @@
-name: Publish Helper to AWS
+name: Publish Helper for macOS
 
 on:
   workflow_dispatch:
@@ -100,11 +100,6 @@ jobs:
           appstore-connect-username: ${{ secrets.APPLE_ACCOUNT_USERNAME }}
           appstore-connect-password: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
           primary-bundle-id: 'BUNDLE_ID'
-
-      - name: Staple of the package
-        uses: devbotsxyz/xcode-staple@v1
-        with:
-          product-path: ./macos/target/edamame-helper.pkg
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
