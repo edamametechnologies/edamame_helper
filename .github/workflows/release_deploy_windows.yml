@@ -71,6 +71,8 @@ jobs:
         run: |
           VERSION=$(grep '^version =' ../edamame_foundation/Cargo.toml | awk '{print $3}' | tr -d '"')
           AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
+          # With the hope of universal arm/x86 packages like with macOS...
+          cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}.msi
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
@@ -93,8 +95,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}  
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          cd ./windows/edamame_helper_windows
-          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/windows/edamame-helper-${VERSION}.msi --acl public-read
+          aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-${VERSION}.msi --acl public-read
 
       # Main only
       - name: Check for existing release
@@ -104,12 +105,11 @@ jobs:
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
+          echo "::set-output name=tag::VERSION_TAG"
           RELEASE_ID=$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)
           if [[ -n "$RELEASE_ID" ]]; then
-            echo "Found existing release for tag $VERSION_TAG with id $RELEASE_ID"
             echo "::set-output name=exists::true"
             UPLOAD_URL=$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl)
-            echo "Upload URL for release is $UPLOAD_URL"
             echo "::set-output name=upload_url::$UPLOAD_URL"
           else
             echo "::set-output name=exists::false"
@@ -124,22 +124,19 @@ jobs:
         id: create_release
         shell: bash
         run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          VERSION_TAG=v${VERSION}
-          echo "Creating new release for tag $VERSION_TAG"
-          UPLOAD_URL=$(gh release create $VERSION_TAG --repo ${{ github.repository }} --title "Release $VERSION_TAG" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
-          echo "Upload URL for release is $UPLOAD_URL"
+          UPLOAD_URL=$(gh release create ${{ steps.get_release.outputs.tag }} --repo ${{ github.repository }} --title "Release ${{ steps.get_release.outputs.tag }}" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
           echo "::set-output name=upload_url::$UPLOAD_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Main only
       - name: Upload asset to release
         #if: github.ref == 'refs/heads/main'
-        shell: bash
-        run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          cd ./windows/edamame_helper_windows
-          cp ./target/wix/edamame_helper*.msi ./target/wix/edamame-helper-${VERSION}.msi
-          gh release upload ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }} ./target/wix/edamame-helper-${VERSION}.msi --clobber
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-${{ steps.get_release.outputs.tag }}.msi
+          asset_name: edamame-helper-${{ steps.get_release.outputs.tag }}.msi
+          asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
