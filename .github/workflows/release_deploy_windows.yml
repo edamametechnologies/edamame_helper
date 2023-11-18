@@ -98,7 +98,7 @@ jobs:
 
       # Main only
       - name: Check for existing release
-        #if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         id: get_release
         shell: bash
         run: |
@@ -117,8 +117,7 @@ jobs:
 
       # Main only
       - name: Create release if it doesn't exist
-        #if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
-        if: steps.get_release.outputs.exists != 'true'
+        if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
         # This populates steps.get_release.outputs.upload_url with the upload_url of the release
         id: create_release
         uses: actions/create-release@v1
@@ -132,12 +131,12 @@ jobs:
 
       # Main only
       - name: Upload asset to release
-        #if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
           asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-${{ steps.get_release.outputs.version }}.msi
-          asset_name: edamame-helper-${{ steps.get_release.outputs.tag }}.msi
+          asset_name: edamame-helper-${{ steps.get_release.outputs.version }}.msi
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
