@@ -83,8 +83,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}    
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          cd ./windows/edamame_helper_windows
-          aws s3 cp ./target/wix/edamame_helper*.msi s3://edamame-helper/dev/windows/edamame-helper-${VERSION}.msi --acl public-read
+          aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}.msi s3://edamame-helper/dev/windows/edamame-helper-${VERSION}.msi --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -106,11 +105,9 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
           echo "::set-output name=tag::VERSION_TAG"
-          RELEASE_ID=$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)
-          if [[ -n "$RELEASE_ID" ]]; then
+          if [[ -n "$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)" ]]; then
             echo "::set-output name=exists::true"
-            UPLOAD_URL=$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl)
-            echo "::set-output name=upload_url::$UPLOAD_URL"
+            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl)"
           else
             echo "::set-output name=exists::false"
           fi
@@ -124,8 +121,7 @@ jobs:
         id: create_release
         shell: bash
         run: |
-          UPLOAD_URL=$(gh release create ${{ steps.get_release.outputs.tag }} --repo ${{ github.repository }} --title "Release ${{ steps.get_release.outputs.tag }}" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
-          echo "::set-output name=upload_url::$UPLOAD_URL"
+          echo "::set-output name=upload_url::$(gh release create ${{ steps.get_release.outputs.tag }} --repo ${{ github.repository }} --title "Release ${{ steps.get_release.outputs.tag }}" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
