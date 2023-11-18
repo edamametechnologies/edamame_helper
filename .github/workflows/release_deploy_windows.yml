@@ -109,7 +109,7 @@ jobs:
           if [[ -n "$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)" ]]; then
             echo "::set-output name=exists::true"
             # Remove the trailing strings after assets from the upload_url
-            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl | sed 's/assets*/assets/g')"
+            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl | sed 's/assets.*/assets/')"
           else
             echo "::set-output name=exists::false"
           fi
