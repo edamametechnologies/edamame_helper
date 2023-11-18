@@ -18,8 +18,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Declare default permissions as read only.
-permissions: read-all
+# Write permissions are required to upload the release asset.
+permissions: write-all
 
 jobs:
   build:
@@ -101,8 +101,9 @@ jobs:
           VERSION=$(grep '^version =' ../edamame_foundation/Cargo.toml | awk '{print $3}' | tr -d '"')
           cd ./macos
           ./make-pkg.sh && ./make-distribution-pkg.sh
-          ./make-pkg.sh && ./make-distribution-pkg.sh
-          
+          # Final naming with version
+          cp ./target/edamame-helper.pkg ./target/edamame-helper-${VERSION}.pkg
+
       - name: Notarization
         shell: bash
         run: |          
@@ -119,7 +120,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}    
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper.pkg s3://edamame-helper/dev/macos/edamame-helper-${VERSION}.pkg --acl public-read
+          aws s3 cp ./macos/target/edamame-helper-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-${VERSION}.pkg --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -130,19 +131,21 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}  
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper.pkg s3://edamame-helper/macos/edamame-helper-${VERSION}.pkg --acl public-read
+          aws s3 cp ./macos/target/edamame-helper-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-${VERSION}.pkg --acl public-read
 
       # Main only
       - name: Check for existing release
         if: github.ref == 'refs/heads/main'
         id: get_release
+        shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          echo "::set-output name=version::$VERSION"
           VERSION_TAG=v${VERSION}
-          RELEASE_ID=$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)
-          if [[ -n "$RELEASE_ID" ]]; then
+          echo "::set-output name=tag::$VERSION_TAG"
+          if [[ -n "$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)" ]]; then
             echo "::set-output name=exists::true"
-            echo "::set-output name=upload_url::$(gh release view $RELEASE_ID --json uploadUrl -q .uploadUrl)"
+            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl )"
           else
             echo "::set-output name=exists::false"
           fi
@@ -152,20 +155,25 @@ jobs:
       # Main only
       - name: Create release if it doesn't exist
         if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
+        # This populates steps.get_release.outputs.upload_url with the upload_url of the release
         id: create_release
-        run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          VERSION_TAG=v${VERSION}
-          UPLOAD_URL=$(gh release create $VERSION_TAG --repo ${{ github.repository }} --title "Release $VERSION_TAG" --notes "Release notes" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
-          echo "::set-output name=upload_url::$UPLOAD_URL"
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_release.outputs.tag }}
+          release_name: Release ${{ steps.get_release.outputs.tag }}
+          draft: false
+          prerelease: false
 
+      # Main only
       - name: Upload asset to release
         if: github.ref == 'refs/heads/main'
-        run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          cp ./macos/target/edamame-helper.pkg ./macos/target/edamame-helper-${VERSION}.pkg
-          gh release upload ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }} ./macos/target/edamame-helper-${VERSION}.pkg --clobber
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
+          asset_path: ./macos/target/edamame-helper-${{ steps.get_release.outputs.version }}.pkg
+          asset_name: edamame-helper-${{ steps.get_release.outputs.tag }}.pkg
+          asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

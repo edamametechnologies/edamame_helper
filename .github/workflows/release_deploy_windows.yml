@@ -18,8 +18,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Declare default permissions as read only.
-permissions: read-all
+# Write permissions are required to upload the release asset.
+permissions: write-all
 
 jobs:
   build:
@@ -71,7 +71,7 @@ jobs:
         run: |
           VERSION=$(grep '^version =' ../edamame_foundation/Cargo.toml | awk '{print $3}' | tr -d '"')
           AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
-          # With the hope of universal arm/x86 packages like with macOS...
+          # Final naming with version, with the hope of universal arm/x86 packages like with macOS...
           cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./windows/edamame_helper_windows/target/wix/edamame-helper-${VERSION}.msi
 
       # Dev only (upload to dev folder)
