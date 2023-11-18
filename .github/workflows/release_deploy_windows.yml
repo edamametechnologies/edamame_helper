@@ -103,11 +103,13 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          echo "::set-output name=version::VERSION"
           VERSION_TAG=v${VERSION}
           echo "::set-output name=tag::$VERSION_TAG"
           if [[ -n "$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)" ]]; then
             echo "::set-output name=exists::true"
-            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl | sed 's/{*}//g')"
+            # Remove the trailing strings after assets from the upload_url
+            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl | sed 's/assets*/assets/g')"
           else
             echo "::set-output name=exists::false"
           fi
@@ -135,7 +137,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-${{ steps.get_release.outputs.tag }}.msi
+          asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-${{ steps.get_release.outputs.version }}.msi
           asset_name: edamame-helper-${{ steps.get_release.outputs.tag }}.msi
           asset_content_type: application/octet-stream
         env:
