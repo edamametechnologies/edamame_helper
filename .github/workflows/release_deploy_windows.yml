@@ -130,7 +130,7 @@ jobs:
         #if: github.ref == 'refs/heads/main'
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
           asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-${{ steps.get_release.outputs.tag }}.msi
           asset_name: edamame-helper-${{ steps.get_release.outputs.tag }}.msi
           asset_content_type: application/octet-stream
