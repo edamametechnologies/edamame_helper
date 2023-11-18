@@ -105,12 +105,12 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
           RELEASE_ID=$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)
-          echo "RELEASE_ID=" $RELEASE_ID
           if [[ -n "$RELEASE_ID" ]]; then
+            echo "Found existing release for tag $VERSION_TAG with id $RELEASE_ID"
             echo "::set-output name=exists::true"
-            UPLOAD_URL=$(gh release view $RELEASE_ID --json uploadUrl -q .uploadUrl)
-            echo "UPLOAD_URL=" $(UPLOAD_URL)
-            echo "::set-output name=upload_url::$(gh release view $RELEASE_ID --json uploadUrl -q .uploadUrl)"
+            UPLOAD_URL=$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl)
+            echo "Upload URL for release is $UPLOAD_URL"
+            echo "::set-output name=upload_url::$UPLOAD_URL"
           else
             echo "::set-output name=exists::false"
           fi
@@ -126,7 +126,9 @@ jobs:
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           VERSION_TAG=v${VERSION}
-          UPLOAD_URL=$(gh release create $VERSION_TAG --repo ${{ github.repository }} --title "Release $VERSION_TAG" --notes "Release notes" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
+          echo "Creating new release for tag $VERSION_TAG"
+          UPLOAD_URL=$(gh release create $VERSION_TAG --repo ${{ github.repository }} --title "Release $VERSION_TAG" --draft=false --prerelease=false --json uploadUrl -q .uploadUrl)
+          echo "Upload URL for release is $UPLOAD_URL"
           echo "::set-output name=upload_url::$UPLOAD_URL"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
