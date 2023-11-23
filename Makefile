@@ -2,6 +2,8 @@
 
 # Env files shall be within the project directory
 
+include ./.env
+
 env:
 	env
 
@@ -43,6 +45,14 @@ windows:
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cd ./windows/edamame_helper_windows; cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
 	AzureSignTool sign -kvt "${AZURE_SIGN_TENANT_ID}" -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc "${AZURE_SIGN_CERT_NAME}" -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper*.msi
+
+version:
+	cargo set-version $(EDAMAME_HELPER_VERSION)
+	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
+	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
+	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
+	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
+
 
 unused_dependencies:
 	cargo +nightly udeps
