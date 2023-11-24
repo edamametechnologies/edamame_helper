@@ -46,4 +46,4 @@ tonic-build = "0.9.2"
 dotenv-build = "0.1"
 
 # Build metadata
-vergen = { version = "8.2.4", features = [ "build", "git", "gitcl" ]}
+vergen = { version = "8.2.4", features = [ "build", "git",  "gitcl", "si" ]}
