@@ -9,6 +9,7 @@ use edamame_foundation::threat::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::lanscan_mdns::*;
 use edamame_foundation::helper_rx::*;
+use edamame_foundation::foundation::FOUNDATION_VERSION;
 
 lazy_static! {
     // This is our local copy of the threats
@@ -23,6 +24,19 @@ pub static EDAMAME_SERVER_PEM: &str = env!("EDAMAME_SERVER_PEM");
 pub static EDAMAME_SERVER_KEY: &str = env!("EDAMAME_SERVER_KEY");
 pub static EDAMAME_CLIENT_CA_PEM: &str = env!("EDAMAME_CLIENT_CA_PEM");
 
+// Return a string with the helper info
+pub fn get_helper_info() -> String {
+    format!(
+        "Helper is using Foundation version is {} and has been built on {} with branch {} and signature {} on {} by {}",
+        FOUNDATION_VERSION,
+        env!("VERGEN_BUILD_TIMESTAMP"),
+        env!("VERGEN_GIT_BRANCH"),
+        env!("VERGEN_GIT_SHA"),
+        env!("VERGEN_SYSINFO_OS_VERSION"),
+        env!("VERGEN_SYSINFO_USER")
+    )
+}
+
 pub fn start_server() {
 
     // Init sentry
@@ -33,6 +47,8 @@ pub fn start_server() {
 
     init_helper_logger();
     info!("Logger initialized");
+
+    info!("{}", get_helper_info());
 
     async_init();
 

@@ -21,5 +21,9 @@ fn main() {
     dotenv_build::output(config).unwrap();
 
     // Emit the instructions
-    let _ = EmitBuilder::builder().git_branch().emit();
+    let _ = EmitBuilder::builder().
+        all_build().
+        all_git().
+        all_sysinfo().
+        emit();
 }
