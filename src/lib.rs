@@ -39,6 +39,11 @@ pub fn get_helper_info() -> String {
 
 pub fn start_server() {
 
+    init_helper_logger();
+    info!("Logger initialized");
+
+    info!("{}", get_helper_info());
+
     // Init sentry
     let sentry = sentry::init((EDAMAME_HELPER_SENTRY, sentry::ClientOptions {
         release: sentry::release_name!(),
@@ -53,11 +58,6 @@ pub fn start_server() {
     }
     // Forget the sentry object to prevent it from being dropped
     std::mem::forget(sentry);
-
-    init_helper_logger();
-    info!("Logger initialized");
-
-    info!("{}", get_helper_info());
 
     async_init();
 
