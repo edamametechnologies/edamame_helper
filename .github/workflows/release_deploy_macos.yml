@@ -102,7 +102,7 @@ jobs:
           cd ./macos
           ./make-pkg.sh && ./make-distribution-pkg.sh
           # Final naming with version
-          cp ./target/edamame-helper.pkg ./target/edamame-helper-${VERSION}.pkg
+          cp ./target/edamame-helper.pkg ./target/edamame-helper-macos-${VERSION}.pkg
 
       - name: Notarization
         shell: bash
@@ -120,7 +120,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}    
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-${VERSION}.pkg --acl public-read
+          aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -131,7 +131,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_REGION=${{ secrets.AWS_REGION }}  
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-${VERSION}.pkg --acl public-read
+          aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only
       - name: Check for existing release
@@ -173,8 +173,8 @@ jobs:
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
-          asset_path: ./macos/target/edamame-helper-${{ steps.get_release.outputs.version }}.pkg
-          asset_name: edamame-helper-${{ steps.get_release.outputs.version }}.pkg
+          asset_path: ./macos/target/edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
+          asset_name: edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
           asset_content_type: application/octet-stream
           overwrite: true
         env:
