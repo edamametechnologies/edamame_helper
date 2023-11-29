@@ -39,25 +39,11 @@ pub fn get_helper_info() -> String {
 
 pub fn start_server() {
 
-    init_helper_logger();
+    // Must be done before async init (for Sentry at least)
+    init_logger(EDAMAME_HELPER_SENTRY, true);
     info!("Logger initialized");
 
     info!("{}", get_helper_info());
-
-    // Init sentry
-    let sentry = sentry::init((EDAMAME_HELPER_SENTRY, sentry::ClientOptions {
-        release: sentry::release_name!(),
-        traces_sample_rate: 1.0,
-        ..Default::default()
-    }));
-
-    if sentry.is_enabled() {
-        info!("Sentry initialized");
-    } else {
-        error!("Sentry initialization failed");
-    }
-    // Forget the sentry object to prevent it from being dropped
-    std::mem::forget(sentry);
 
     async_init();
 
