@@ -482,7 +482,7 @@ checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 
 [[package]]
 name = "edamame_foundation"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -497,6 +497,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
+ "network-interface",
  "once_cell",
  "oui",
  "parking_lot",
@@ -521,7 +522,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "base64",
  "dotenv-build",
@@ -945,9 +946,9 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hyper"
-version = "0.14.27"
+version = "0.14.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffb1cfd654a8219eaef89881fdb3bb3b1cdc5fa75ded05d6933b2b382e395468"
+checksum = "bf96e135eb83a2a8ddf766e426a841d8ddd7449d5f00d34ea02b41d2f19eef80"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -960,7 +961,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.5",
  "tokio",
  "tower-service",
  "tracing",
@@ -1242,6 +1243,18 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "network-interface"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d68759ef97fe9c9e46f79ea8736c19f1d28992e24c8dc8ce86752918bfeaae7"
+dependencies = [
+ "cc",
+ "libc",
+ "thiserror",
+ "winapi",
 ]
 
 [[package]]
