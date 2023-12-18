@@ -39,7 +39,15 @@ macos_trace:
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./macos/target/edamame_helper"
 
-windows:
+windows_debug:
+	cd ../edamame_foundation; ./update-threats.sh Windows
+	cargo update
+	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
+	cd ./windows/edamame_helper_windows; cargo build
+	# This won't work as it requires service context
+	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./windows/edamame_helper_windows/target/debug/edamame_helper_windows.exe
+
+windows_release:
 	cd ../edamame_foundation; ./update-threats.sh Windows
 	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
