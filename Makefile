@@ -56,6 +56,7 @@ windows_release:
 
 version:
 	cargo set-version $(EDAMAME_HELPER_VERSION)
+	cd ./windows/edamame_helper_windows; cargo set-version $(EDAMAME_HELPER_VERSION)
 	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
 	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
 	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
