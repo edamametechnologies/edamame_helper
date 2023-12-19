@@ -27,7 +27,7 @@ pub static EDAMAME_CLIENT_CA_PEM: &str = env!("EDAMAME_CLIENT_CA_PEM");
 // Return a string with the helper info
 pub fn get_helper_info() -> String {
     format!(
-        "Helper is using Foundation version is {} and has been built on {} with branch {} and signature {} on {} by {}",
+        "Helper is using Foundation version {} and has been built on {} with branch {} and signature {} on {} by {}",
         FOUNDATION_VERSION,
         env!("VERGEN_BUILD_TIMESTAMP"),
         env!("VERGEN_GIT_BRANCH"),
