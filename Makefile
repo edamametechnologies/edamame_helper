@@ -30,6 +30,8 @@ macos_debug:
 	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
+	# Sign again as the signed binary is somewhere else
+	codesign -s "Developer ID Application: EDAMAME Technologies (WSL782B48J)" ./macos/target/edamame_helper
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; rust-lldb ./macos/target/edamame_helper"
 
 macos_trace:
@@ -62,6 +64,14 @@ version:
 	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
 	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
 
+upgrade:
+	rustup update
+	cargo install -f cargo-upgrades
+	cargo upgrades
+	cargo update
+	cd windows/edamame_helper_windows; cargo upgrades
+	cd windows/edamame_helper_windows; cargo update
+	pod repo update
 
 unused_dependencies:
 	cargo +nightly udeps
