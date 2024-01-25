@@ -43,6 +43,7 @@ macos_trace:
 
 windows_debug:
 	cd ../edamame_foundation; ./update-threats.sh Windows
+	cd ../edamame_foundation; cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cd ./windows/edamame_helper_windows; cargo build
