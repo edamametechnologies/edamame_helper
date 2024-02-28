@@ -3,6 +3,7 @@ use log::{error, info};
 use lazy_static::lazy_static;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use envcrypt::envc;
 
 use edamame_foundation::runtime::*;
 use edamame_foundation::threat::*;
@@ -17,30 +18,31 @@ lazy_static! {
     static ref SERVER_CONTROL: Arc<Mutex<ServerControl>> =  Arc::new(Mutex::new(ServerControl::new()));
 }
 
-pub static EDAMAME_HELPER_SENTRY: &str = env!("EDAMAME_HELPER_SENTRY");
-
-pub static EDAMAME_SERVER: &str = env!("EDAMAME_SERVER");
-pub static EDAMAME_SERVER_PEM: &str = env!("EDAMAME_SERVER_PEM");
-pub static EDAMAME_SERVER_KEY: &str = env!("EDAMAME_SERVER_KEY");
-pub static EDAMAME_CLIENT_CA_PEM: &str = env!("EDAMAME_CLIENT_CA_PEM");
+lazy_static! {
+    pub static ref EDAMAME_HELPER_SENTRY: String = envc!("EDAMAME_HELPER_SENTRY").to_string();
+    pub static ref EDAMAME_SERVER: String = envc!("EDAMAME_SERVER").to_string();
+    pub static ref EDAMAME_SERVER_PEM: String = envc!("EDAMAME_SERVER_PEM").to_string();
+    pub static ref EDAMAME_SERVER_KEY: String = envc!("EDAMAME_SERVER_KEY").to_string();
+    pub static ref EDAMAME_CLIENT_CA_PEM: String = envc!("EDAMAME_CLIENT_CA_PEM").to_string();
+}
 
 // Return a string with the helper info
 pub fn get_helper_info() -> String {
     format!(
         "Helper is using Foundation version {} and has been built on {} with branch {} and signature {} on {} by {}",
         FOUNDATION_VERSION,
-        env!("VERGEN_BUILD_TIMESTAMP"),
-        env!("VERGEN_GIT_BRANCH"),
-        env!("VERGEN_GIT_SHA"),
-        env!("VERGEN_SYSINFO_OS_VERSION"),
-        env!("VERGEN_SYSINFO_USER")
+        envc!("VERGEN_BUILD_TIMESTAMP"),
+        envc!("VERGEN_GIT_BRANCH"),
+        envc!("VERGEN_GIT_SHA"),
+        envc!("VERGEN_SYSINFO_OS_VERSION"),
+        envc!("VERGEN_SYSINFO_USER")
     )
 }
 
 pub fn start_server() {
 
     // Must be done before async init (for Sentry at least)
-    init_logger(EDAMAME_HELPER_SENTRY, true);
+    init_logger(&EDAMAME_HELPER_SENTRY, true);
     info!("Logger initialized");
 
     info!("{}", get_helper_info());
@@ -52,16 +54,15 @@ pub fn start_server() {
         mdns_start().await
     });
 
-    // Start a thread to regularly check on the network interfaces and flush the mDNS cache accordingly
-
-
+    // TODO: start a thread to regularly check on the network interfaces and flush the mDNS cache accordingly
+    
     // Branch (needs to be gathered within the target executable's crate)
-    let branch = env!("VERGEN_GIT_BRANCH");
+    let branch = envc!("VERGEN_GIT_BRANCH");
 
     // RPC server
     async_exec(async {
 
-        match SERVER_CONTROL.lock().await.start_server(EDAMAME_SERVER_PEM, EDAMAME_SERVER_KEY, EDAMAME_CLIENT_CA_PEM, EDAMAME_SERVER, branch).await {
+        match SERVER_CONTROL.lock().await.start_server(&EDAMAME_SERVER_PEM, &EDAMAME_SERVER_KEY, &EDAMAME_CLIENT_CA_PEM, &EDAMAME_SERVER, branch).await {
             Ok(_) => info!("Server started"),
             Err(e) => error!("Server start error: {}", e),
         }
