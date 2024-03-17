@@ -53,8 +53,6 @@ pub fn start_server() {
     async_exec(async {
         mdns_start().await
     });
-
-    // TODO: start a thread to regularly check on the network interfaces and flush the mDNS cache accordingly
     
     // Branch (needs to be gathered within the target executable's crate)
     let branch = envc!("VERGEN_GIT_BRANCH");
