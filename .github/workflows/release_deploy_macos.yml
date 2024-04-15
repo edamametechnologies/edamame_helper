@@ -98,7 +98,7 @@ jobs:
       - name: Packaging and signing of the Helper
         shell: bash
         run: |
-          VERSION=$(grep '^version =' ../edamame_foundation/Cargo.toml | awk '{print $3}' | tr -d '"')
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           cd ./macos
           ./make-pkg.sh && ./make-distribution-pkg.sh
           # Final naming with version
