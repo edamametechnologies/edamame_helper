@@ -1,0 +1,66 @@
+# This workflows check and ensures that the version has been updated before merging to main.
+# XXX: trigger this workflow only for PR from dev to main ?
+
+name: Check version
+
+# only run on PR to main
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  compare_versions:
+    name: Check version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare versions
+        run: |
+          # Current branch version
+          grep "EDAMAME_HELPER_VERSION" .env | cut -d"=" -f2 | grep -o "[0-9]*" > cb_version
+          CB_MAJOR=$(cat cb_version | head -1)
+          CB_MINOR=$(cat cb_version | head -2 | tail -1)
+          CB_PATCH=$(cat cb_version | head -3 | tail -1)
+
+          # Main branch version
+          git fetch origin
+          git checkout main
+          git pull
+          grep "EDAMAME_HELPER_VERSION" .env | cut -d"=" -f2 | grep -o "[0-9]*" > main_version
+          MAIN_MAJOR=$(cat main_version | head -1)
+          MAIN_MINOR=$(cat main_version | head -2 | tail -1)
+          MAIN_PATCH=$(cat main_version | head -3 | tail -1)
+
+          # Show both versions
+          echo "Current branch version: $CB_MAJOR.$CB_MINOR.$CB_PATCH"
+          echo "Main branch version: $MAIN_MAJOR.$MAIN_MINOR.$MAIN_PATCH"
+
+          # Compare majors
+          if [ "$MAIN_MAJOR" -gt "$CB_MAJOR" ]; then
+            echo "Current branch's major version must be greater (or equal)"
+            exit 1
+          fi
+          if [ "$MAIN_MAJOR" -lt "$CB_MAJOR" ]; then
+            echo "Current branch version is higher than main's version :)"
+            exit 0
+          fi
+
+          # Compare minors (at this point, majors are equal)
+          if ["$MAIN_MINOR" -gt "$CB_MINOR" ]; then
+            echo "Current branch's minor version must be greater (or equal)"
+            exit 1
+          fi
+          if [ "$MAIN_MINOR" -lt "$CB_MINOR" ]; then
+            echo "Current branch version is higher than main's version :)"
+            exit 0
+          fi
+
+          # Compare patchs (at this point, majors and minors are equal)
+          if [ "$MAIN_PATCH" -ge "$CB_PATCH" ]; then
+            echo "Current branch's patch version must be greater"
+            exit 1
+          fi
+
+          echo "Current branch version is higher than main's version \@_@/"
+          exit 0
