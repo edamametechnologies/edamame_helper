@@ -29,7 +29,8 @@ lazy_static! {
 // Return a string with the helper info
 pub fn get_helper_info() -> String {
     format!(
-        "Helper is using Foundation version {} and has been built on {} with branch {} and signature {} on {} by {}",
+        "Helper has version {}, is using Foundation version {} and has been built on {} with branch {} and signature {} on {} by {}",
+        env!("CARGO_PKG_VERSION"),
         FOUNDATION_VERSION,
         envc!("VERGEN_BUILD_TIMESTAMP"),
         envc!("VERGEN_GIT_BRANCH"),
@@ -42,7 +43,7 @@ pub fn get_helper_info() -> String {
 pub fn start_server() {
 
     // Must be done before async init (for Sentry at least)
-    init_logger(&EDAMAME_HELPER_SENTRY, true);
+    init_logger(&EDAMAME_HELPER_SENTRY, env!("CARGO_PKG_VERSION"),true);
     info!("Logger initialized");
 
     info!("{}", get_helper_info());
