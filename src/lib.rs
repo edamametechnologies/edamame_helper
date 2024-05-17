@@ -42,13 +42,21 @@ pub fn get_helper_info() -> String {
 
 pub fn start_server() {
 
-    // Must be done before async init (for Sentry at least)
-    init_logger(&EDAMAME_HELPER_SENTRY, env!("CARGO_PKG_VERSION"),true);
+    let url = envc!("EDAMAME_HELPER_SENTRY");
+    let release = envc!("CARGO_PKG_VERSION");
+    
+    // Init Sentry first, must be before the runtime
+    init_sentry(url, release);
+    info!("Sentry initialized");
+
+    // Must be before the logger
+    async_init();
+    info!("Runtime initialized");
+
+    init_logger(true);
     info!("Logger initialized");
 
     info!("{}", get_helper_info());
-
-    async_init();
 
     // mDNS discovery
     async_exec(async {
