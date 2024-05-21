@@ -44,18 +44,13 @@ pub fn start_server() {
 
     let url = envc!("EDAMAME_HELPER_SENTRY");
     let release = envc!("CARGO_PKG_VERSION");
-    
-    // Init Sentry first, must be before the runtime
-    init_sentry(url, release);
-    info!("Sentry initialized");
 
-    // Must be before the logger
-    async_init();
-    info!("Runtime initialized");
-
-    init_logger(true);
+    init_logger(url, release, false);
     info!("Logger initialized");
 
+    async_init();
+    info!("Runtime initialized");
+    
     info!("{}", get_helper_info());
 
     // mDNS discovery
