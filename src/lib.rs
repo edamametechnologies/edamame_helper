@@ -1,4 +1,4 @@
-use log::{error, info};
+use tracing::{error, info};
 // For objects
 use lazy_static::lazy_static;
 use std::sync::Arc;
@@ -45,19 +45,13 @@ pub fn start_server() {
     let url = envc!("EDAMAME_HELPER_SENTRY");
     let release = envc!("CARGO_PKG_VERSION");
     
-    // Init Sentry first, must be before the runtime
-    init_sentry(url, release);
-    info!("Sentry initialized");
-
-    // Must be before the logger
-    async_init();
-    info!("Runtime initialized");
-
-    init_logger(true);
+    init_logger(true, url, release);
     info!("Logger initialized");
-
     info!("{}", get_helper_info());
 
+    // Must be after sentry
+    async_init();
+    
     // mDNS discovery
     async_exec(async {
         mdns_start().await
