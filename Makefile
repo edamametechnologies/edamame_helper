@@ -20,14 +20,12 @@ clean:
 
 macos_publish:
 	cd ../edamame_foundation; ./update-threats.sh macOS
-	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
 	set -a; source ../edamame/secrets/aws-writer.env; set +a; cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh && ./publish.sh
 
 macos_debug:
 	cd ../edamame_foundation; ./update-threats.sh macOS
-	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
 	codesign -s "Developer ID Application: EDAMAME Technologies (WSL782B48J)" ./macos/target/edamame_helper
@@ -35,7 +33,6 @@ macos_debug:
 
 macos_trace:
 	cd ../edamame_foundation; ./update-threats.sh macOS
-	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./macos/target/edamame_helper"
@@ -43,7 +40,6 @@ macos_trace:
 windows_debug:
 	cd ../edamame_foundation; ./update-threats.sh Windows
 	cd ../edamame_foundation; cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cd ./windows/edamame_helper_windows; cargo build
 	# This won't work as it requires service context
@@ -51,7 +47,6 @@ windows_debug:
 
 windows_release:
 	cd ../edamame_foundation; ./update-threats.sh Windows
-	cargo update
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cd ./windows/edamame_helper_windows; cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
 	AzureSignTool sign -kvt "${AZURE_SIGN_TENANT_ID}" -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc "${AZURE_SIGN_CERT_NAME}" -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper*.msi
@@ -71,8 +66,10 @@ upgrade:
 	cargo update
 	cd windows/edamame_helper_windows; cargo upgrades
 	cd windows/edamame_helper_windows; cargo update
-	pod repo update
 
 unused_dependencies:
 	cargo +nightly udeps
 
+format:
+	cargo fmt
+	cd windows/edamame_helper_windows; cargo fmt
