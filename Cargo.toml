@@ -19,7 +19,7 @@ edamame_foundation = { path = "../edamame_foundation" }
 lazy_static = "1.4.0"
 
 # Logging
-log = "0.4.21"
+tracing = "0.1.40"
 
 # gRPC server/client
 tonic = { version = "0.11.0", features = ["tls"] }
