@@ -32,7 +32,7 @@ macos_debug:
 	# Binary is not signed in the project
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
 	# Code sign to run locally
-	./localsign.sh ./macos/target/edamame_helper
+	./localsign_macos.sh ./macos/target/edamame_helper
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; rust-lldb ./macos/target/edamame_helper"
 
 windows_debug:
