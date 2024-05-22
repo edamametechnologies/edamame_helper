@@ -21,21 +21,19 @@ clean:
 macos_publish:
 	cd ../edamame_foundation; ./update-threats.sh macOS
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
+	# Binary is not signed in the project
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
+	# Signing is handled here
 	set -a; source ../edamame/secrets/aws-writer.env; set +a; cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh && ./publish.sh
 
 macos_debug:
 	cd ../edamame_foundation; ./update-threats.sh macOS
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
+	# Binary is not signed in the project
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
-	codesign -s "Developer ID Application: EDAMAME Technologies (WSL782B48J)" ./macos/target/edamame_helper
+	# Code sign to run locally
+	./localsign.sh ./macos/target/edamame_helper
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; rust-lldb ./macos/target/edamame_helper"
-
-macos_trace:
-	cd ../edamame_foundation; ./update-threats.sh macOS
-	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./macos/target/edamame_helper"
 
 windows_debug:
 	cd ../edamame_foundation; ./update-threats.sh Windows
