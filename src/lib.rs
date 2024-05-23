@@ -45,7 +45,7 @@ pub fn start_server() {
     let url = envc!("EDAMAME_HELPER_SENTRY");
     let release = envc!("CARGO_PKG_VERSION");
     
-    init_logger(true, url, release);
+    init_logger("helper", url, release);
     info!("Logger initialized");
     info!("{}", get_helper_info());
 
