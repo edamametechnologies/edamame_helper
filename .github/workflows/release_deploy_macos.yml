@@ -60,8 +60,8 @@ jobs:
         shell: bash
         run: |
           # Create certificate files from secrets base64
-          echo ${{ secrets.APPLE_DEVELOPEMENT_CER }} | base64 --decode > certificate_dev.cer
-          echo ${{ secrets.APPLE_DEVELOPEMENT_KEY }} | base64 --decode > certificate_dev.key
+          echo ${{ secrets.APPLE_DEVELOPMENT_CER }} | base64 --decode > certificate_dev.cer
+          echo ${{ secrets.APPLE_DEVELOPMENT_KEY }} | base64 --decode > certificate_dev.key
           echo ${{ secrets.APPLE_MAC_INSTALLER_CER }} | base64 --decode > certificate_installer.cer
           echo ${{ secrets.APPLE_MAC_INSTALLER_KEY }} | base64 --decode > certificate_installer.key
           echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CER }} | base64 --decode > certificate_application.cer
