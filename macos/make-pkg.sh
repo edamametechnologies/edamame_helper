@@ -16,7 +16,6 @@ cp ./target/edamame_helper "$TARGET/ROOT/$ROOT"
 # Sign + hardened runtime
 codesign --timestamp --options=runtime -s "Developer ID Application: Edamame Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
 
-
 # Include the most recent uninstall script
 cp uninstall.sh "$TARGET/ROOT/$ROOT"
 
