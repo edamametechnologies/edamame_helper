@@ -18,13 +18,14 @@ clean:
 	rm -rf ./windows/edamame_helper/target
 	rm -rf ./macos/target
 
+-include ../secrets/aws-writer.env
 macos_publish:
 	cd ../edamame_foundation; ./update-threats.sh macOS
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	# Binary is not signed in the project
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
 	# Signing is handled here
-	set -a; source ../edamame/secrets/aws-writer.env; set +a; cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh && ./publish.sh
+	cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh && ./publish.sh
 
 macos_debug:
 	cd ../edamame_foundation; ./update-threats.sh macOS
