@@ -46,7 +46,6 @@ pub fn start_server() {
     let release = envc!("CARGO_PKG_VERSION");
     
     init_logger("helper", url, release);
-    info!("Logger initialized");
     info!("{}", get_helper_info());
 
     // Must be after sentry
