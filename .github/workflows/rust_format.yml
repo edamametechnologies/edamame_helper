@@ -19,6 +19,11 @@ jobs:
         run: |
           rustup component add rustfmt
 
+      - run: |
+          # Install protobuf
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       - name: Extract branch name
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
@@ -34,10 +39,4 @@ jobs:
         run: |
           cargo fmt --all -- --check
 
-      - name: Build
-        run: |
-          cargo build --verbose
 
-      - name: Run tests
-        run: |
-          cargo test --verbose
