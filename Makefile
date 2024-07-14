@@ -25,7 +25,7 @@ macos_publish:
 	# Binary is not signed in the project
 	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
 	# Signing is handled here
-	cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh && ./publish.sh
+	cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh ./target/edamame-helper.pkg && ./publish.sh
 
 macos_debug:
 	cd ../edamame_foundation; ./update-threats.sh macOS

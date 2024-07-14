@@ -6,7 +6,6 @@ on:
     branches:
       - 'dev'
       - 'main'
-      - 'april-5'
     paths-ignore:
       - 'macos/**'
       - 'linux/**'
@@ -25,6 +24,22 @@ permissions: write-all
 jobs:
   build:
     runs-on: windows-latest
+
+    env:
+      EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
+      PWNED_API_KEY: ${{ secrets.PWNED_API_KEY }}
+      EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
+      EDAMAME_CA_PEM: ${{ secrets.EDAMAME_CA_PEM }}
+      EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
+      EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
+      EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AZURE_SIGN_TENANT_ID: ${{ secrets.AZURE_SIGN_TENANT_ID }}
+      AZURE_SIGN_KEY_VAULT_URI: ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }}
+      AZURE_SIGN_CLIENT_ID: ${{ secrets.AZURE_SIGN_CLIENT_ID }}
+      AZURE_SIGN_CLIENT_SECRET: ${{ secrets.AZURE_SIGN_CLIENT_SECRET }}
 
     steps:
       - name: Check out Git repository
@@ -61,12 +76,7 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: |
-          export EDAMAME_HELPER_SENTRY=${{ secrets.EDAMAME_HELPER_SENTRY }}    
-          export EDAMAME_SERVER=${{ secrets.EDAMAME_SERVER }}    
-          export EDAMAME_CLIENT_CA_PEM=${{ secrets.EDAMAME_CLIENT_CA_PEM }}    
-          export EDAMAME_SERVER_KEY=${{ secrets.EDAMAME_SERVER_KEY }}    
-          export EDAMAME_SERVER_PEM=${{ secrets.EDAMAME_SERVER_PEM }}    
+        run: | 
           cd ./windows/edamame_helper_windows
           cargo build --release
           mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe
@@ -76,7 +86,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
+          ./windows/sign.sh ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
           # Final naming with version, with the hope of universal arm/x86 packages like with macOS...
           cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi
 
@@ -84,10 +94,7 @@ jobs:
       - name: Upload helper to AWS
         if: github.ref == 'refs/heads/dev'
         shell: bash
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}    
+        run: | 
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/dev/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
 
@@ -96,9 +103,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}  
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
 
