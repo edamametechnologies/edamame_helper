@@ -48,7 +48,7 @@ windows_release:
 	cd ../edamame_foundation; ./update-threats.sh Windows
 	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
 	cd ./windows/edamame_helper_windows; cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
-	AzureSignTool sign -kvt "${AZURE_SIGN_TENANT_ID}" -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc "${AZURE_SIGN_CERT_NAME}" -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper*.msi
+	./windows/sign.sh -v ./windows/edamame_helper_windows/target/wix/edamame_helper*.msi
 
 version:
 	cargo set-version $(EDAMAME_HELPER_VERSION)
