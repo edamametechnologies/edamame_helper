@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VERSION=$(grep '^version =' ../Cargo.toml | awk '{print $3}' | tr -d '"')
-TARGET="./target"
+VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+TARGET="./target/pkg"
 ROOT="Library/Application Support/EDAMAME/EDAMAME-Helper"
 
 # Warning !

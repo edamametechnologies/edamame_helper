@@ -46,27 +46,6 @@ jobs:
           brew install protobuf
           brew install wget
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Setup for edamame_foundation
-        shell: bash
-        run: |
-          cd ..
-          git clone --branch ${{ steps.extract_branch.outputs.branch }} https://github.com/edamametechnologies/edamame_foundation.git
-          cd ./edamame_foundation
-          cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static 
-          cp ./Cargo.toml.static ./Cargo.toml
-          ./update-threats.sh macOS
-
-      - name: Setup for edamame_helper
-        shell: bash
-        run: |
-          cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static
-          cp ./Cargo.toml.static ./Cargo.toml
-
       - name: Setup signing
         shell: bash
         run: |
@@ -104,24 +83,21 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: |  
-          cd ./macos
-          xcodebuild -project ./edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
+          cargo build --release
 
       - name: Packaging and signing of the Helper
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          cd ./macos
-          ./make-pkg.sh && ./make-distribution-pkg.sh
+          ./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh
           # Final naming with version
-          cp ./target/edamame-helper.pkg ./target/edamame-helper-macos-${VERSION}.pkg
+          cp ./target/pkg/edamame-helper.pkg ./target/pkg/edamame-helper-macos-${VERSION}.pkg
 
       - name: Notarization
         shell: bash
         run: |          
-          cd ./macos
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          ./notarization.sh ./target/edamame-helper.pkg
+          ./macos/notarization.sh ./target/pkg/edamame-helper.pkg
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
@@ -129,7 +105,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
+          aws s3 cp ./target/pkg/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -137,7 +113,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
+          aws s3 cp ./target/pkg/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only
       - name: Check for existing release
@@ -179,7 +155,7 @@ jobs:
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
-          asset_path: ./macos/target/edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
+          asset_path: ./target/pkg/edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
           asset_name: edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
           asset_content_type: application/octet-stream
           overwrite: true
