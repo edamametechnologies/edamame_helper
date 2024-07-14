@@ -1,7 +1,6 @@
 use vergen::EmitBuilder;
 
 fn main() {
-
     // Dotenv build with a specific env path
     let config = dotenv_build::Config {
         filename: std::path::Path::new("../secrets/foundation.env"),
@@ -26,9 +25,9 @@ fn main() {
     }
 
     // Emit the instructions
-    let _ = EmitBuilder::builder().
-        all_build().
-        all_git().
-        all_sysinfo().
-        emit();
+    let _ = EmitBuilder::builder()
+        .all_build()
+        .all_git()
+        .all_sysinfo()
+        .emit();
 }

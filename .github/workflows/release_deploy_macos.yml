@@ -6,7 +6,6 @@ on:
     branches:
       - 'dev'
       - 'main'
-      - 'april-5'
     paths-ignore:
       - 'windows/**'
       - 'linux/**'
@@ -25,6 +24,18 @@ permissions: write-all
 jobs:
   build:
     runs-on: macos-latest
+
+    env:
+      EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
+      PWNED_API_KEY: ${{ secrets.PWNED_API_KEY }}
+      EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
+      EDAMAME_CA_PEM: ${{ secrets.EDAMAME_CA_PEM }}
+      EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
+      EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
+      EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
       - name: Check out Git repository
@@ -92,12 +103,7 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: |
-          export EDAMAME_HELPER_SENTRY=${{ secrets.EDAMAME_HELPER_SENTRY }}    
-          export EDAMAME_SERVER=${{ secrets.EDAMAME_SERVER }}    
-          export EDAMAME_CLIENT_CA_PEM=${{ secrets.EDAMAME_CLIENT_CA_PEM }}    
-          export EDAMAME_SERVER_KEY=${{ secrets.EDAMAME_SERVER_KEY }}    
-          export EDAMAME_SERVER_PEM=${{ secrets.EDAMAME_SERVER_PEM }}    
+        run: |  
           cd ./macos
           xcodebuild -project ./edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
 
@@ -115,16 +121,13 @@ jobs:
         run: |          
           cd ./macos
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          ./notarization.sh
+          ./notarization.sh ./target/edamame-helper.pkg
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
         if: github.ref == 'refs/heads/dev'
         shell: bash
         run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}    
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/dev/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
@@ -133,9 +136,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}  
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           aws s3 cp ./macos/target/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
