@@ -86,7 +86,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          ./windows/sign.sh ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
+          AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
           # Final naming with version, with the hope of universal arm/x86 packages like with macOS...
           cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi
 
