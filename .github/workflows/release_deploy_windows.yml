@@ -50,26 +50,9 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Setup for edamame_foundation
-        shell: bash
-        run: |
-          cd ..
-          git clone --branch ${{ steps.extract_branch.outputs.branch }} https://github.com/edamametechnologies/edamame_foundation.git
-          cd ./edamame_foundation
-          cat ./Cargo.toml | sed 's/\"staticlib\"/\"cdylib\"/g' > ./Cargo.toml.dynamic
-          cp ./Cargo.toml.dynamic ./Cargo.toml
-          ./update-threats.sh Windows
-
       - name: Setup for edamame_helper
         shell: bash
         run: |
-          cat ./Cargo.toml | sed 's/\"staticlib\"/\"cdylib\"/g' > ./Cargo.toml.dynamic
-          cp ./Cargo.toml.dynamic ./Cargo.toml
           cargo install cargo-wix
           choco install wixtoolset
           echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
@@ -77,18 +60,17 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: | 
-          cd ./windows/edamame_helper_windows
           cargo build --release
-          mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe
+          mv ./target/edamame_helper_windows.exe ./target/edamame_helper.exe
           cargo wix --nocapture --no-build
 
       - name: Signing of the Helper
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
+          AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
           # Final naming with version, with the hope of universal arm/x86 packages like with macOS...
-          cp ./windows/edamame_helper_windows/target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi
+          cp ./target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
@@ -96,7 +78,7 @@ jobs:
         shell: bash
         run: | 
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/dev/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
+          aws s3 cp ./target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/dev/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
 
       # Main only (upload to base folder)
       - name: Upload helper to AWS
@@ -104,7 +86,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
+          aws s3 cp ./target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
 
       # Main only
       - name: Check for existing release
@@ -146,7 +128,7 @@ jobs:
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/edamame_helper_windows/target/wix/edamame-helper-windows-${{ steps.get_release.outputs.version }}.msi
+          asset_path: ./target/wix/edamame-helper-windows-${{ steps.get_release.outputs.version }}.msi
           asset_name: edamame-helper-windows-${{ steps.get_release.outputs.version }}.msi
           asset_content_type: application/octet-stream
           overwrite: true

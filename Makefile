@@ -15,60 +15,37 @@ clean:
 	cargo clean
 	rm -rf ./build/
 	rm -rf ./target/
-	rm -rf ./windows/edamame_helper/target
-	rm -rf ./macos/target
 
 -include ../secrets/aws-writer.env
 macos_publish:
-	cd ../edamame_foundation; ./update-threats.sh macOS
-	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	# Binary is not signed in the project
-	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Release
-	# Signing is handled here
-	cd ./macos; ./make-pkg.sh && ./make-distribution-pkg.sh && ./notarization.sh ./target/edamame-helper.pkg && ./publish.sh
+	cargo build --release
+	./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
 
 macos_debug:
-	cd ../edamame_foundation; ./update-threats.sh macOS
-	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	# Binary is not signed in the project
-	xcodebuild -project ./macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj -scheme edamame_helper -configuration Debug
-	# Code sign to run locally
-	./localsign_macos.sh ./macos/target/edamame_helper
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=debug; rust-lldb ./macos/target/edamame_helper"
+	cargo build
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=debug; rust-lldb ./target/debug/edamame_helper"
 
 windows_debug:
-	cd ../edamame_foundation; ./update-threats.sh Windows
-	cd ../edamame_foundation; cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	cd ./windows/edamame_helper_windows; cargo build
+	cargo build
 	# This won't work as it requires service context
 	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./windows/edamame_helper_windows/target/debug/edamame_helper_windows.exe
 
+-include ../secrets/azure-sign.env
 windows_release:
-	cd ../edamame_foundation; ./update-threats.sh Windows
-	cat ./Cargo.toml | sed 's/\"cdylib\"/\"staticlib\"/g' > ./Cargo.toml.static; cp ./Cargo.toml.static ./Cargo.toml
-	cd ./windows/edamame_helper_windows; cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
-	./windows/sign.sh -v ./windows/edamame_helper_windows/target/wix/edamame_helper*.msi
+	cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
+	AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/edamame_helper*.msi
 
 version:
 	cargo set-version $(EDAMAME_HELPER_VERSION)
-	cd ./windows/edamame_helper_windows; cargo set-version $(EDAMAME_HELPER_VERSION)
-	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
-	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/edamame_helper.xcodeproj/project.pbxproj
-	sed -i "" "s/MARKETING_VERSION = .*/MARKETING_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
-	sed -i "" "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $(EDAMAME_HELPER_VERSION);/g" ../edamame_helper/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.pbxproj
 
 upgrade:
 	rustup update
 	cargo install -f cargo-upgrades
 	cargo upgrades
 	cargo update
-	cd windows/edamame_helper_windows; cargo upgrades
-	cd windows/edamame_helper_windows; cargo update
 
 unused_dependencies:
 	cargo +nightly udeps
 
 format:
 	cargo fmt
-	cd windows/edamame_helper_windows; cargo fmt
