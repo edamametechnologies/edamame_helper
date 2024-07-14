@@ -17,6 +17,7 @@ clean:
 	rm -rf ./target/
 
 -include ../secrets/aws-writer.env
+export
 macos_publish:
 	cargo build --release
 	./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
