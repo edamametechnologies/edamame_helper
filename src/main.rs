@@ -1,6 +1,6 @@
+mod server;
 #[cfg(target_os = "windows")]
 mod windows;
-mod server;
 
 #[cfg(target_os = "windows")]
 fn main() -> windows_service::Result<()> {
