@@ -1,4 +1,4 @@
-use crate::main::{start_server, stop_server};
+use crate::server::{start_server, stop_server};
 
 use std::{ffi::OsString, time::Duration};
 use windows_service::{
