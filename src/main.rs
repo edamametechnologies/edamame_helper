@@ -1,16 +1,16 @@
-use tracing::{error, info};
-use envcrypt::envc;
-use lazy_static::lazy_static;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+#[cfg(target_os = "windows")]
+use crate::main_windows;
 use edamame_foundation::foundation::FOUNDATION_VERSION;
 use edamame_foundation::helper_rx::*;
 use edamame_foundation::lanscan_mdns::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::runtime::*;
 use edamame_foundation::threat::*;
-#[cfg(target_os = "windows")]
-use crate::main_windows;
+use envcrypt::envc;
+use lazy_static::lazy_static;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use tracing::{error, info};
 
 lazy_static! {
     // This is our local copy of the threats
