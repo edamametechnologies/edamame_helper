@@ -36,10 +36,6 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      AZURE_SIGN_TENANT_ID: ${{ secrets.AZURE_SIGN_TENANT_ID }}
-      AZURE_SIGN_KEY_VAULT_URI: ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }}
-      AZURE_SIGN_CLIENT_ID: ${{ secrets.AZURE_SIGN_CLIENT_ID }}
-      AZURE_SIGN_CLIENT_SECRET: ${{ secrets.AZURE_SIGN_CLIENT_SECRET }}
 
     steps:
       - name: Check out Git repository
@@ -65,12 +61,16 @@ jobs:
           cargo wix --nocapture --no-build
 
       - name: Signing of the Helper
+        if: github.ref == 'refs/heads/dev'
+        # We can't use bash here, as the AzureSignTool is a .NET tool
+        run: AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper_windows-*-x86_64.msi
+
+      - name: Naming of the Helper
         shell: bash
         run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper_windows-${VERSION}-x86_64.msi
-          # Final naming with version, with the hope of universal arm/x86 packages like with macOS...
-          cp ./target/wix/edamame_helper_windows-${VERSION}-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
+          # Final naming with version, with the hope of future universal arm/x86 packages like with macOS...
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')          
+          cp ./target/wix/edamame_helper_windows-*-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
