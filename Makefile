@@ -1,8 +1,12 @@
-.PHONY:
-
-# Env files shall be within the project directory
+.PHONY: upgrade unused_dependencies format clean test
 
 include ./.env
+
+# Import and export env for edamame_core and edamame_foundation
+-include ../secrets/lambda-signature.env
+-include ../secrets/foundation.env
+-include ../secrets/sentry.env
+export
 
 env:
 	env
@@ -10,11 +14,6 @@ env:
 delcachedignore:
 	# Remove files from the index (do not delete them from the filesystem) - limited to the base .gitignore
 	git ls-files -i -c --exclude-from=.gitignore | xargs git rm --cached
-
-clean:
-	cargo clean
-	rm -rf ./build/
-	rm -rf ./target/
 
 -include ../secrets/aws-writer.env
 export
@@ -50,3 +49,11 @@ unused_dependencies:
 
 format:
 	cargo fmt
+
+clean:
+	cargo clean
+	rm -rf ./build/
+	rm -rf ./target/
+
+test:
+	cargo test
