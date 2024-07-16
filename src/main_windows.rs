@@ -1,9 +1,6 @@
 use crate::{start_server, stop_server};
 
-use std::{
-    ffi::OsString,
-    time::Duration,
-};
+use std::{ffi::OsString, time::Duration};
 use windows_service::{
     define_windows_service,
     service::{
@@ -16,7 +13,6 @@ use windows_service::{
 
 const SERVICE_NAME: &str = "edamame_helper";
 const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
-
 
 pub fn run() -> Result<()> {
     // Register generated `ffi_service_main` with the system and start the service, blocking
@@ -40,8 +36,6 @@ pub fn my_service_main(_arguments: Vec<OsString>) {
 }
 
 pub fn run_service() -> Result<()> {
-
-
     // Define system service event handler that will be receiving service events.
     let event_handler = move |control_event| -> ServiceControlHandlerResult {
         match control_event {
@@ -51,7 +45,6 @@ pub fn run_service() -> Result<()> {
 
             // Handle stop
             ServiceControl::Stop => {
-
                 // Stop the server
                 stop_server();
 
@@ -93,4 +86,3 @@ pub fn run_service() -> Result<()> {
 
     Ok(())
 }
-

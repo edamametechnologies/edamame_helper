@@ -96,5 +96,3 @@ fn main() -> windows_service::Result<()> {
 fn main() {
     start_server();
 }
-
-
