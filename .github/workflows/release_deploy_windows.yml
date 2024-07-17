@@ -49,7 +49,7 @@ jobs:
         run: |
           cd ..
           wget https://edamame-posture.s3.eu-west-1.amazonaws.com/dev/windows/0.3.82/edamame_posture.exe
-          chmod ugo+x edamame_posture
+          chmod u+x edamame_posture
           ./edamame_posture.exe start ${{ secrets.EDAMAME_POSTURE_USER }} ${{ secrets.EDAMAME_POSTURE_DOMAIN }} ${{ secrets.EDAMAME_POSTURE_PIN }}
 
       - name: Check out Git repository
@@ -71,14 +71,14 @@ jobs:
       - name: Signing of the Helper
         if: github.ref == 'refs/heads/dev'
         # We can't use bash here, as the AzureSignTool is a .NET tool
-        run: AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper_windows-*-x86_64.msi
+        run: AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper-*-x86_64.msi
 
       - name: Naming of the Helper
         shell: bash
         run: |
           # Final naming with version, with the hope of future universal arm/x86 packages like with macOS...
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')          
-          cp ./target/wix/edamame_helper_windows-*-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
+          cp ./target/wix/edamame_helper-*-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
