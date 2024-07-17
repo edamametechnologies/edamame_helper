@@ -28,12 +28,12 @@ macos_debug:
 windows_debug:
 	cargo build
 	# This won't work as it requires service context
-	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./windows/edamame_helper_windows/target/debug/edamame_helper_windows.exe
+	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./target/debug/edamame_helper.exe
 
 -include ../secrets/azure-sign.env
 windows_release:
-	cargo build --release && mv ./target/release/edamame_helper_windows.exe ./target/release/edamame_helper.exe && cargo wix --nocapture --no-build
-	AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/edamame_helper*.msi
+	cargo build --release && cargo wix --nocapture --no-build
+	AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper*.msi
 
 version:
 	cargo set-version $(EDAMAME_HELPER_VERSION)
