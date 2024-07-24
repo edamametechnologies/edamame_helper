@@ -60,23 +60,18 @@ jobs:
           cargo build --release
           cargo wix --nocapture --no-build
 
-      - name: Extract version from Cargo.toml
-        id: get_version
-        shell: bash
-        run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          echo "::set-output name=version::$VERSION"
-
       - name: Signing of the Helper
-        if: github.ref == 'refs/heads/dev'
         # We can't use bash here, as the AzureSignTool is a .NET tool
-        run: AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper-${{ steps.get_version.outputs.version }}.msi
+        run: |
+          $VERSION = (Get-Content ./Cargo.toml | Select-String '^version =' | ForEach-Object { $_.Line.Split('=')[1].Trim().Trim('"') })
+          AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper-$VERSION.msi
 
       - name: Naming of the Helper
         shell: bash
         run: |
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           # Final naming with version, with the hope of future universal arm/x86 packages like with macOS...
-          cp ./target/wix/edamame_helper-${VERSION}.msi ./target/wix/edamame-helper-windows-${{ steps.get_version.outputs.version }}.msi
+          cp ./target/wix/edamame_helper-${VERSION}.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
 
       # Dev only (upload to dev folder)
       - name: Upload helper to AWS
