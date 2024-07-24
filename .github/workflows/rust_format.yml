@@ -1,0 +1,26 @@
+on:
+  push:
+    branches: [ dev, main ]
+  pull_request:
+
+name: Rust Format
+
+jobs:
+  fmt:
+    name: Check Rust
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+      - run: rustup component add rustfmt
+
+      - run: |
+          # Install protobuf
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Check code format
+        run: |
+          cargo fmt --all -- --check
+
+

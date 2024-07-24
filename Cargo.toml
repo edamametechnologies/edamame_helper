@@ -2,51 +2,58 @@
 name = "edamame_helper"
 version = "0.3.4"
 edition = "2021"
-
-[lib]
-# Dynamic lib version is not used on apple platforms as it's painful but we must use it on windows and linux
-# We must keep "lib" if we want to build targets with cargo
-crate-type = ["staticlib", "lib"]
+authors = ["EDAMAME Technologies"]
+description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
 
 [dependencies]
 
 # EDAMAME foundation
-# TODO: don't depend on local path - required for the macOS build process for now
-#edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation" }
-edamame_foundation = { path = "../edamame_foundation" }
+edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", version = "0.3.3" }
 
 # Global statics w/ mutex
-lazy_static = "1.4.0"
+lazy_static = "1.5.0"
 
 # Logging
-log = "0.4.21"
+tracing = "0.1.40"
 
 # gRPC server/client
-tonic = { version = "0.11.0", features = ["tls"] }
-prost = "0.12.4"
-base64 = "0.22.0"
+tonic = { version = "0.12.0", features = ["tls"] }
+prost = "0.13.0"
+base64 = "0.22.1"
 
 # CLI support
 run_script = "0.10.1"
 
 # Async
-tokio = "1.37.0"
+tokio = "1.38.0"
 
 # LAN Scanner
-serde_json = "1.0.115"
+serde_json = "1.0.120"
 
 # Sentry
-sentry = "0.32.2"
+sentry = "0.34.0"
 
 # Encrypted env (weak)
 envcrypt = "0.5.0"
 
+# Windows
+[target.'cfg(any(target_os = "windows"))'.dependencies]
+windows-service = "0.6.0"
+cargo-wix = "0.3.4"
+
+# Linux
+[target.'cfg(any(target_os = "linux"))'.dependencies]
+cargo-deb = "1.44.0"
+# See cargo-deb crate for configuration: https://crates.io/crates/cargo-deb
+[package.metadata.deb]
+name = "edamame_helper_linux"
+license-file = ["LICENSE", "0"]
+maintainer-scripts = "debian/"
+systemd-units = { enable = true }
+
 [build-dependencies]
 # protobuf->Rust compiler
-tonic-build = "0.11.0"
-
-# Environment variables (build time)
-dotenv-build = "0.1.1"
+tonic-build = "0.12.0"
 
 # Build metadata
 vergen = { version = "8.3.1", features = [ "build", "git",  "gitcl", "si" ]}

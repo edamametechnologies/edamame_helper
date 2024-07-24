@@ -1,8 +1,2 @@
 /.idea/
 /target/
-/Cargo.toml.static
-/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/xcuserdata/
-/macos/edamame_helper_xcode/edamame_helper_xcode.xcodeproj/project.xcworkspace/xcuserdata/
-/edamame_helper.xcodeproj/xcuserdata/
-/macos/target/
-/windows/edamame_helper_windows/target/
