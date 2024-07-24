@@ -61,6 +61,7 @@ jobs:
           cargo wix --nocapture --no-build
 
       - name: Extract version from Cargo.toml
+        id: get_version
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
