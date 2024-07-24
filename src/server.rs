@@ -19,9 +19,12 @@ lazy_static! {
 lazy_static! {
     pub static ref EDAMAME_HELPER_SENTRY: String = envc!("EDAMAME_HELPER_SENTRY").to_string();
     pub static ref EDAMAME_SERVER: String = envc!("EDAMAME_SERVER").trim_matches('"').to_string();
-    pub static ref EDAMAME_SERVER_PEM: String = envc!("EDAMAME_SERVER_PEM").trim_matches('"').to_string();
-    pub static ref EDAMAME_SERVER_KEY: String = envc!("EDAMAME_SERVER_KEY").trim_matches('"').to_string();
-    pub static ref EDAMAME_CLIENT_CA_PEM: String = envc!("EDAMAME_CLIENT_CA_PEM").trim_matches('"').to_string();
+    pub static ref EDAMAME_SERVER_PEM: String =
+        envc!("EDAMAME_SERVER_PEM").trim_matches('"').to_string();
+    pub static ref EDAMAME_SERVER_KEY: String =
+        envc!("EDAMAME_SERVER_KEY").trim_matches('"').to_string();
+    pub static ref EDAMAME_CLIENT_CA_PEM: String =
+        envc!("EDAMAME_CLIENT_CA_PEM").trim_matches('"').to_string();
 }
 
 // Return a string with the helper info
