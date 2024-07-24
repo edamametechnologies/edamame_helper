@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VERSION=$(grep '^version =' ../Cargo.toml | awk '{print $3}' | tr -d '"')
-TARGET="./target"
+VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+TARGET="./target/pkg"
 ROOT="Library/Application Support/EDAMAME/EDAMAME-Helper"
 
 # Warning !
@@ -14,8 +14,7 @@ mkdir -p "$TARGET/ROOT/$ROOT"
 cp ./target/edamame_helper "$TARGET/ROOT/$ROOT"
 
 # Sign + hardened runtime
-codesign --timestamp --options=runtime -s "Developer ID Application: EDAMAME Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
-
+codesign --timestamp --options=runtime -s "Developer ID Application: Edamame Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
 
 # Include the most recent uninstall script
 cp uninstall.sh "$TARGET/ROOT/$ROOT"
