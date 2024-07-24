@@ -44,14 +44,6 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
-      - name: Setup EDAMAME Posture
-        shell: bash
-        run: |
-          cd ..
-          wget https://edamame-posture.s3.eu-west-1.amazonaws.com/dev/windows/0.3.82/edamame_posture.exe
-          chmod u+x edamame_posture
-          ./edamame_posture.exe start ${{ secrets.EDAMAME_POSTURE_USER }} ${{ secrets.EDAMAME_POSTURE_DOMAIN }} ${{ secrets.EDAMAME_POSTURE_PIN }}
-
       - name: Check out Git repository
         uses: actions/checkout@v3
 
