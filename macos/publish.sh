@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
