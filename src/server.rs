@@ -1,9 +1,9 @@
-use edamame_foundation::version::FOUNDATION_VERSION;
 use edamame_foundation::helper_rx::*;
 use edamame_foundation::lanscan_mdns::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::runtime::*;
 use edamame_foundation::threat::*;
+use edamame_foundation::version::FOUNDATION_VERSION;
 use envcrypt::envc;
 use lazy_static::lazy_static;
 use std::sync::Arc;
@@ -45,7 +45,7 @@ pub fn start_server() {
     let url = envc!("EDAMAME_HELPER_SENTRY");
     let release = envc!("CARGO_PKG_VERSION");
 
-    init_logger("helper", url, release);
+    init_logger("helper", url, release, "", &[]);
     info!("{}", get_helper_info());
 
     // Must be after sentry
