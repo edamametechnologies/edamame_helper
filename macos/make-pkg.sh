@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
 TARGET="./target/pkg"
@@ -8,22 +9,22 @@ ROOT="Library/Application Support/EDAMAME/EDAMAME-Helper"
 rm -rf "$TARGET/ROOT/"
 mkdir -p "$TARGET/ROOT/Library/LaunchDaemons"
 
-cp com.edamametechnologies.edamame-helper.plist "$TARGET/ROOT/Library/LaunchDaemons/"
+cp ./macos/com.edamametechnologies.edamame-helper.plist "$TARGET/ROOT/Library/LaunchDaemons/"
 
 mkdir -p "$TARGET/ROOT/$ROOT"
-cp ./target/edamame_helper "$TARGET/ROOT/$ROOT"
+cp ./target/release/edamame_helper "$TARGET/ROOT/$ROOT"
 
 # Sign + hardened runtime
 codesign --timestamp --options=runtime -s "Developer ID Application: Edamame Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
 
 # Include the most recent uninstall script
-cp uninstall.sh "$TARGET/ROOT/$ROOT"
+cp ./macos/uninstall.sh "$TARGET/ROOT/$ROOT"
 
 rm -rf "$TARGET/scripts/"
 mkdir -p "$TARGET/scripts"
 
-cp postinstall "$TARGET/scripts/"
-cp preinstall "$TARGET/scripts/"
+cp ./macos/postinstall "$TARGET/scripts/"
+cp ./macos/preinstall "$TARGET/scripts/"
 
 cd "$TARGET"
 mkdir -p pkg
