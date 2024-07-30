@@ -8,7 +8,7 @@ description = "This system helper is required for advanced Security Score analys
 [dependencies]
 
 # EDAMAME foundation
-edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", version = "0.3.3" }
+edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", version = "0.3.4" }
 
 # Global statics w/ mutex
 lazy_static = "1.5.0"
