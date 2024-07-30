@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
 TARGET="./target/pkg"
