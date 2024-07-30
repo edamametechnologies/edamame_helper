@@ -939,7 +939,7 @@ checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
 [[package]]
 name = "edamame_backend"
 version = "0.3.3"
-source = "git+https://github.com/edamametechnologies/edamame_backend#b39eaa3dde7ba98a5d7009aca04348dfab66aa68"
+source = "git+https://github.com/edamametechnologies/edamame_backend#8a2b0241283a7eac8ef826a108fd0cb5c7725854"
 dependencies = [
  "anyhow",
  "blake3",
@@ -952,7 +952,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.3.4"
-source = "git+https://github.com/edamametechnologies/edamame_foundation#bdd48132356c66537051c1789257d449df39c6e9"
+source = "git+https://github.com/edamametechnologies/edamame_foundation#42ca972010eb018d50200a415c7df92622616717"
 dependencies = [
  "anyhow",
  "arp-toolkit",
