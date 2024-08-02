@@ -39,13 +39,23 @@ jobs:
 
     steps:
 
+      - name: Setup EDAMAME Posture
+        if: github.ref == 'refs/heads/main'
+        uses: edamametechnologies/edamame_posture_action@v0
+        with:
+          edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
+          edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
+          edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
+          edamame_id: ${{ github.run_id }}
+          auto_remediate: true
+
       - name: Install additional packages w/ Chocolatey
         run: |
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup for edamame_helper
         shell: bash
@@ -107,17 +117,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Main only
-      - name: Setup EDAMAME Posture
-        if: github.ref == 'refs/heads/main'
-        uses: edamametechnologies/edamame_posture_action@v0
-        with:
-          edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
-          edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
-          edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
-          edamame_id: ${{ github.run_id }}
-          auto_remediate: true
 
       # Main only
       - name: Create release if it doesn't exist
