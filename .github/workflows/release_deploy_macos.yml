@@ -83,7 +83,9 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: |  
+        run: |
+          rustup target add x86_64-apple-darwin
+          rustup target add aarch64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           cargo build --release --target aarch64-apple-darwin
           lipo -create -output target/edamame_helper \
