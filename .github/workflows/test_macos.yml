@@ -1,0 +1,74 @@
+name: Publish Helper for macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'dev'
+      - 'main'
+    paths-ignore:
+      - 'windows/**'
+      - 'linux/**'
+      - 'snap/**'
+      - .github/workflows/**_windows.yml
+      - .github/workflows/**_linux.yml
+
+# Auto cancel previous runs if they were not completed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Write permissions are required to upload the release asset.
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    env:
+      EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
+      PWNED_API_KEY: ${{ secrets.PWNED_API_KEY }}
+      EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
+      EDAMAME_CA_PEM: ${{ secrets.EDAMAME_CA_PEM }}
+      EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
+      EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
+      EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+
+      - name: Setup EDAMAME Posture
+        uses: edamametechnologies/edamame_posture_action@v0
+        with:
+          edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
+          edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
+          edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
+          edamame_id: ${{ github.run_id }}
+          auto_remediate: true
+          network_scan: false
+
+      - name: Install additional packages w/ Homebrew
+        run: |
+          brew install protobuf
+          brew install wget
+
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Tests
+        id: tests
+        shell: bash
+        run: |
+          make test
+        continue-on-error: true
+
+      - name: Slack alerts
+        if: steps.tests.outcome != 'success'
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          channel-id: 'C072J0U9TH7'
+          slack-message: "Tests ran in ${{ github.workflow }} for ${{ github.repository }} for ${{ runner.os }} on branch ${{ github.ref }} failed"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
