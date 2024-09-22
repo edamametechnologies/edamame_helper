@@ -84,7 +84,11 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: |  
-          cargo build --release
+          cargo build --release --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          lipo -create -output target/edamame_helper \
+            target/x86_64-apple-darwin/release/edamame_helper \
+            target/aarch64-apple-darwin/release/edamame_helper
 
       - name: Packaging and signing of the Helper
         shell: bash
