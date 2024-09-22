@@ -20,7 +20,8 @@ export
 macos_publish:
 	cargo build --release --target x86_64-apple-darwin
 	cargo build --release --target aarch64-apple-darwin
-	lipo -create -output target/edamame_helper \
+	mkdir -p target/release
+	lipo -create -output target/release/edamame_helper \
     target/x86_64-apple-darwin/release/edamame_helper \
     target/aarch64-apple-darwin/release/edamame_helper
 	./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
