@@ -2,7 +2,6 @@ use edamame_foundation::helper_rx::*;
 use edamame_foundation::lanscan_mdns::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::runtime::*;
-use edamame_foundation::threat::*;
 use edamame_foundation::version::FOUNDATION_VERSION;
 use envcrypt::envc;
 use lazy_static::lazy_static;
@@ -11,9 +10,8 @@ use tokio::sync::Mutex;
 use tracing::{error, info};
 
 lazy_static! {
-    // This is our local copy of the threats
-    static ref THREATS: Arc<Mutex<ThreatMetrics>> = Arc::new(Mutex::new(ThreatMetrics::new("")));
-    static ref SERVER_CONTROL: Arc<Mutex<ServerControl>> =  Arc::new(Mutex::new(ServerControl::new()));
+    static ref SERVER_CONTROL: Arc<Mutex<ServerControl>> =
+        Arc::new(Mutex::new(ServerControl::new()));
 }
 
 lazy_static! {
@@ -57,8 +55,8 @@ pub fn start_server() {
     // Branch (needs to be gathered within the target executable's crate)
     let branch = envc!("VERGEN_GIT_BRANCH");
 
-    // RPC server
     async_exec(async {
+        // RPC server
         match SERVER_CONTROL
             .lock()
             .await
@@ -77,6 +75,7 @@ pub fn start_server() {
     });
 }
 
+#[allow(dead_code)]
 pub fn stop_server() {
     mdns_stop();
 
