@@ -1,4 +1,4 @@
-name: Test Windows
+name: Test for Windows
 
 on:
   workflow_dispatch:
@@ -29,7 +29,6 @@ jobs:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
       PWNED_API_KEY: ${{ secrets.PWNED_API_KEY }}
       EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
-      EDAMAME_CA_PEM: ${{ secrets.EDAMAME_CA_PEM }}
       EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
       EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
       EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
@@ -47,16 +46,12 @@ jobs:
           edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
-          auto_remediate: true
-          network_scan: false
+          checkout: true
 
       - name: Install additional packages w/ Chocolatey
         run: |
           choco install protoc wget
           dotnet tool install --global AzureSignTool
-
-      - name: Check out Git repository
-        uses: actions/checkout@v4
 
       - name: Tests
         id: tests

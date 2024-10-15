@@ -1,6 +1,6 @@
 [package]
 name = "edamame_helper"
-version = "0.3.4"
+version = "0.7.0"
 edition = "2021"
 authors = ["EDAMAME Technologies"]
 description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
@@ -8,7 +8,9 @@ description = "This system helper is required for advanced Security Score analys
 [dependencies]
 
 # EDAMAME foundation
-edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", version = "0.3.4" }
+# Local copy in order to allow rapid development/debug
+#edamame_foundation = { path = "../edamame_foundation", features = ["packetcapture"] }
+edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = ["packetcapture"] }
 
 # Global statics w/ mutex
 lazy_static = "1.5.0"
@@ -22,7 +24,7 @@ prost = "0.13.0"
 base64 = "0.22.1"
 
 # CLI support
-run_script = "0.10.1"
+run_script = "0.11.0"
 
 # Async
 tokio = "1.38.0"
@@ -38,12 +40,12 @@ envcrypt = "0.5.0"
 
 # Windows
 [target.'cfg(any(target_os = "windows"))'.dependencies]
-windows-service = "0.6.0"
+windows-service = "0.7.0"
 cargo-wix = "0.3.4"
 
 # Linux
 [target.'cfg(any(target_os = "linux"))'.dependencies]
-cargo-deb = "1.44.0"
+cargo-deb = "2.7.0"
 # See cargo-deb crate for configuration: https://crates.io/crates/cargo-deb
 [package.metadata.deb]
 name = "edamame_helper_linux"
