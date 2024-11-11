@@ -26,6 +26,10 @@ macos_publish:
     target/aarch64-apple-darwin/release/edamame_helper
 	./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
 
+macos_release:
+	cargo build --release
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=info; ./target/release/edamame_helper"
+
 macos_debug:
 	cargo build
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=debug; rust-lldb ./target/debug/edamame_helper"
