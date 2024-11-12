@@ -125,7 +125,7 @@ jobs:
         run: |
           make test
           # Test the installer
-          sudo installer -verboseR -pkg ./target/pkg/edamame-helper-macos-${VERSION}.pkg -target /
+          sudo installer -verboseR -pkg ./target/pkg/edamame-helper.pkg -target /
           # Test if the helper is running
           sleep 20
           if [ -f /var/log/edamame_helper.log ]; then
