@@ -51,6 +51,8 @@ jobs:
           edamame_domain: ${{ vars.EDAMAME_POSTURE_DOMAIN }}
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
+          auto_remediate: true
+          network_scan: true
           checkout: true
 
       - name: Install additional packages w/ Chocolatey
@@ -58,11 +60,47 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
+      - name: Setup for edamame_helper
+        shell: bash
+        run: |
+          cargo install cargo-wix
+          choco install wixtoolset
+          echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
+
+      - name: Build helper and its standalone installer
+        shell: bash
+        run: | 
+          cargo build --release
+          cargo wix --nocapture --no-build
+
+      - name: Signing of the Helper
+        # We can't use bash here, as the AzureSignTool is a .NET tool
+        run: |
+          $VERSION = (Get-Content ./Cargo.toml | Select-String '^version =' | ForEach-Object { $_.Line.Split('=')[1].Trim().Trim('"') })
+          AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper-$VERSION-x86_64.msi
+
+      - name: Naming of the Helper
+        shell: bash
+        run: |
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          # Final naming with version, with the hope of future universal arm/x86 packages like with macOS...
+          cp ./target/wix/edamame_helper-${VERSION}-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
+
       - name: Tests
         id: tests
         shell: bash
         run: |
           make test
+          # Test the installer
+          msiexec.exe -i ./target/wix/edamame-helper-windows-${VERSION}.msi -qn
+          sleep 20
+          year=$(date +%Y)
+          if [ -f "/c/Program Files/edamame_helper/bin/edamame_helper.${year}*" ]; then
+            cat "/c/Program Files/edamame_helper/bin/edamame_helper.${year}*"
+          else
+            echo "Helper log file not found"
+            exit 1
+          fi
         continue-on-error: true
 
       - name: Slack alerts
