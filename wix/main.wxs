@@ -116,11 +116,23 @@
                     <Directory Id='Bin' Name='bin'>
                          <Component Id='binary0' Guid='*'>
                              <File
-                                 Id='EDAMAMEHelper'
+                                 Id='EDAMAMEHelperExe'
                                  Name='edamame_helper.exe'
                                  DiskId='1'
                                  Source='$(var.CargoTargetBinDir)\edamame_helper.exe'
                                  KeyPath='yes'/>
+
+                             <File
+                                 Id='PacketDll'
+                                 Name='Packet.dll'
+                                 DiskId='1'
+                                 Source='..\windows\Packet.dll'/>
+                             <File
+                                 Id='wpcapDll'
+                                 Name='wpcap.dll'
+                                 DiskId='1'
+                                 Source='..\windows\wpcap.dll'/>
+
                              <ServiceInstall
                                  Id="EDAMAMEServiceInstaller"
                                  Type="ownProcess"
