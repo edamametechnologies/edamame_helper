@@ -93,8 +93,10 @@ jobs:
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           make test
           # Test the installer
+          echo "Testing the installer"
           cd ./target/wix/
           msiexec.exe -i edamame-helper-windows-${VERSION}.msi -qn
+          echo "Waiting for the helper to start"
           sleep 20
           year=$(date +%Y)
           if [ -f "/c/Program Files/edamame_helper/bin/edamame_helper.${year}*" ]; then
