@@ -126,12 +126,12 @@
                                  Id='PacketDll'
                                  Name='Packet.dll'
                                  DiskId='1'
-                                 Source='..\windows\Packet.dll'/>
+                                 Source='windows\Packet.dll'/>
                              <File
                                  Id='wpcapDll'
                                  Name='wpcap.dll'
                                  DiskId='1'
-                                 Source='..\windows\wpcap.dll'/>
+                                 Source='windows\wpcap.dll'/>
 
                              <ServiceInstall
                                  Id="EDAMAMEServiceInstaller"
