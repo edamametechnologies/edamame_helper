@@ -125,8 +125,10 @@ jobs:
         run: |
           make test
           # Test the installer
+          echo "Testing the installer"
           sudo installer -verboseR -pkg ./target/pkg/edamame-helper.pkg -target /
           # Test if the helper is running
+          echo "Waiting for the helper to start"
           sleep 20
           if [ -f /var/log/edamame_helper.log ]; then
             cat /var/log/edamame_helper.log
