@@ -1,4 +1,4 @@
-name: Publish Helper for Windows
+name: Release Helper for macOS on GitHub / AWS
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: macos-latest
 
     env:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
@@ -34,7 +34,6 @@ jobs:
     steps:
 
       - name: Setup EDAMAME Posture
-        if: github.ref == 'refs/heads/main'
         uses: edamametechnologies/edamame_posture_action@v0
         with:
           edamame_user: ${{ vars.EDAMAME_POSTURE_USER }}
@@ -45,52 +44,78 @@ jobs:
           network_scan: true
           checkout: true
 
-      - name: Install additional packages w/ Chocolatey
+      - name: Install additional packages w/ Homebrew
         run: |
-          choco install protoc wget
-          dotnet tool install --global AzureSignTool
+          brew install protobuf
+          brew install wget
 
-      - name: Setup for edamame_helper
+      - name: Setup signing
         shell: bash
         run: |
-          cargo install cargo-wix
-          choco install wixtoolset
-          echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
+          # Create certificate files from secrets base64
+          echo ${{ secrets.APPLE_DEVELOPMENT_CER }} | base64 --decode > certificate_dev.cer
+          echo ${{ secrets.APPLE_DEVELOPMENT_KEY }} | base64 --decode > certificate_dev.key
+          echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_CER }} | base64 --decode > certificate_installer.cer
+          echo ${{ secrets.APPLE_DEVELOPER_ID_INSTALLER_KEY }} | base64 --decode > certificate_installer.key
+          echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CER }} | base64 --decode > certificate_application.cer
+          echo ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_KEY }} | base64 --decode > certificate_application.key
+          
+          # Create p12 file
+          openssl pkcs12 -export -name zup -in certificate_dev.cer -inkey certificate_dev.key -passin pass:${{ secrets.APPLE_P12_PASSWORD }} -out certificate_dev.p12 -passout pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          openssl pkcs12 -export -name zup -in certificate_installer.cer -inkey certificate_installer.key -passin pass:${{ secrets.APPLE_P12_PASSWORD }} -out certificate_installer.p12 -passout pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          openssl pkcs12 -export -name zup -in certificate_application.cer -inkey certificate_application.key -passin pass:${{ secrets.APPLE_P12_PASSWORD }} -out certificate_application.p12 -passout pass:${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          
+          # Configure Keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security create-keychain -p "${{ secrets.MACOS_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ secrets.MACOS_KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          
+          # Import certificates on Keychain
+          security import certificate_dev.p12 -P "${{ secrets.APPLE_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import certificate_installer.p12 -P "${{ secrets.APPLE_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import certificate_application.p12 -P "${{ secrets.APPLE_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+
+          # Verify Keychain
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Store notarization credentials
+          echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
+          xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} Edamame
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: | 
-          cargo build --release
-          cargo wix --nocapture --no-build
-
-      - name: Signing of the Helper
-        # We can't use bash here, as the AzureSignTool is a .NET tool
         run: |
-          $VERSION = (Get-Content ./Cargo.toml | Select-String '^version =' | ForEach-Object { $_.Line.Split('=')[1].Trim().Trim('"') })
-          AzureSignTool sign -kvt ${{ secrets.AZURE_SIGN_TENANT_ID }} -kvu ${{ secrets.AZURE_SIGN_KEY_VAULT_URI }} -kvi ${{ secrets.AZURE_SIGN_CLIENT_ID }} -kvs ${{ secrets.AZURE_SIGN_CLIENT_SECRET }} -kvc ${{ secrets.AZURE_SIGN_CERT_NAME }} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper-$VERSION-x86_64.msi
+          rustup target add x86_64-apple-darwin
+          rustup target add aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          mkdir -p target/release
+          lipo -create -output target/release/edamame_helper \
+            target/x86_64-apple-darwin/release/edamame_helper \
+            target/aarch64-apple-darwin/release/edamame_helper
 
-      - name: Naming of the Helper
+      - name: Packaging and signing of the Helper
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          # Final naming with version, with the hope of future universal arm/x86 packages like with macOS...
-          cp ./target/wix/edamame_helper-${VERSION}-x86_64.msi ./target/wix/edamame-helper-windows-${VERSION}.msi
+          ./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh
+          # Final naming with version
+          cp ./target/pkg/edamame-helper.pkg ./target/pkg/edamame-helper-macos-${VERSION}.pkg
 
-      # Dev only (upload to dev folder)
-      - name: Upload helper to AWS
-        if: github.ref == 'refs/heads/dev'
+      - name: Notarization
         shell: bash
-        run: | 
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/dev/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
-
+        run: |          
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          ./macos/notarization.sh ./target/pkg/edamame-helper.pkg
+          
       # Main only (upload to base folder)
       - name: Upload helper to AWS
         if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
+          aws s3 cp ./target/pkg/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only
       - name: Check for existing release
@@ -132,8 +157,8 @@ jobs:
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ steps.get_release.outputs.exists == 'true' && steps.get_release.outputs.upload_url || steps.create_release.outputs.upload_url }}
-          asset_path: ./target/wix/edamame-helper-windows-${{ steps.get_release.outputs.version }}.msi
-          asset_name: edamame-helper-windows-${{ steps.get_release.outputs.version }}.msi
+          asset_path: ./target/pkg/edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
+          asset_name: edamame-helper-macos-${{ steps.get_release.outputs.version }}.pkg
           asset_content_type: application/octet-stream
           overwrite: true
         env:
