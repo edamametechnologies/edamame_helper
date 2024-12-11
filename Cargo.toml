@@ -32,9 +32,6 @@ tokio = "1.38.0"
 # LAN Scanner
 serde_json = "1.0.120"
 
-# Sentry
-sentry = "0.34.0"
-
 # Encrypted env (weak)
 envcrypt = "0.5.0"
 
