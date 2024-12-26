@@ -118,6 +118,7 @@ jobs:
           aws s3 cp ./target/pkg/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
 
       # Main only
+      # Check if release exists
       - name: Check for existing release
         if: github.ref == 'refs/heads/main'
         id: get_release
@@ -135,6 +136,12 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update the tag if it exists and points to a different commit
+      - name: Update the tag if it exists and points to a different commit
+        if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists == 'true'
+        run: |
+          gh release edit ${{ steps.get_release.outputs.tag }} --repo ${{ github.repository }} --target ${{ github.sha }}
 
       # Main only
       - name: Create release if it doesn't exist
