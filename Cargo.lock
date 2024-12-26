@@ -1151,7 +1151,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.7.2"
+version = "0.8.1"
 dependencies = [
  "base64",
  "cargo-deb",
