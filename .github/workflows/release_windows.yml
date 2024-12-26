@@ -122,7 +122,9 @@ jobs:
         if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists == 'true'
         run: |
           gh release edit ${{ steps.get_release.outputs.tag }} --repo ${{ github.repository }} --target ${{ github.sha }}
-
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       # Main only
       - name: Upload asset to release
         if: github.ref == 'refs/heads/main'
