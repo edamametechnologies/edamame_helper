@@ -1,5 +1,4 @@
 use crate::server::{start_server, stop_server};
-
 use std::{ffi::OsString, time::Duration};
 use windows_service::{
     define_windows_service,
