@@ -23,7 +23,6 @@ fn main() -> windows_service::Result<()> {
     windows::run(branch, url, release, info_string)
 }
 
-#[cfg(not(target_os = "windows"))]
 fn main() {
     let url = envc!("EDAMAME_HELPER_SENTRY");
     // Needs to be gathered within the target executable's crate
