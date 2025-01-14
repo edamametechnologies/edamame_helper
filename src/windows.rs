@@ -35,7 +35,7 @@ pub fn my_service_main(_arguments: Vec<OsString>) {
     }
 }
 
-pub fn run_service() -> Result<()> {
+pub fn run_service(branch: &str, url: &str, release: &str, info_string: &str) -> Result<()> {
     // Define system service event handler that will be receiving service events.
     let event_handler = move |control_event| -> ServiceControlHandlerResult {
         match control_event {
@@ -71,7 +71,7 @@ pub fn run_service() -> Result<()> {
     })?;
 
     // Launch service, returns only when stopped
-    start_server();
+    start_server(branch, url, release, info_string);
 
     // Tell the system that service has stopped.
     status_handle.set_service_status(ServiceStatus {
