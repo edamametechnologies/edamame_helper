@@ -1,6 +1,6 @@
+mod server;
 #[cfg(target_os = "windows")]
 mod windows;
-mod server;
 use crate::server::start_server;
 use edamame_foundation::version::FOUNDATION_VERSION;
 use envcrypt::envc;
