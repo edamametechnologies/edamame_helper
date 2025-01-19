@@ -1,4 +1,7 @@
 use crate::server::{start_server, stop_server};
+use lazy_static::lazy_static;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::{ffi::OsString, time::Duration};
 use windows_service::{
     define_windows_service,
@@ -13,7 +16,20 @@ use windows_service::{
 const SERVICE_NAME: &str = "edamame_helper";
 const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
 
-pub fn run() -> Result<()> {
+lazy_static! {
+    static ref BRANCH: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+    static ref URL: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+    static ref RELEASE: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+    static ref INFO_STRING: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+}
+
+pub fn run(branch: &str, url: &str, release: &str, info_string: &str) -> Result<()> {
+    // Store the params
+    BRANCH.lock().unwrap().push_str(branch);
+    URL.lock().unwrap().push_str(url);
+    RELEASE.lock().unwrap().push_str(release);
+    INFO_STRING.lock().unwrap().push_str(info_string);
+
     // Register generated `ffi_service_main` with the system and start the service, blocking
     // this thread until the service is stopped.
     service_dispatcher::start(SERVICE_NAME, ffi_service_main)
@@ -29,7 +45,11 @@ define_windows_service!(ffi_service_main, my_service_main);
 // parameters. There is no stdout or stderr at this point so make sure to configure the log
 // output to file if needed.
 pub fn my_service_main(_arguments: Vec<OsString>) {
-    if let Err(_e) = run_service() {
+    let branch = BRANCH.lock().unwrap().clone();
+    let url = URL.lock().unwrap().clone();
+    let release = RELEASE.lock().unwrap().clone();
+    let info_string = INFO_STRING.lock().unwrap().clone();
+    if let Err(_e) = run_service(&branch, &url, &release, &info_string) {
         // Handle the error, by logging or something.
     }
 }
