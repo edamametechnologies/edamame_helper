@@ -1,6 +1,7 @@
 mod server;
 #[cfg(target_os = "windows")]
 mod windows;
+#[cfg(not(target_os = "windows"))]
 use crate::server::start_server;
 use edamame_foundation::version::FOUNDATION_VERSION;
 use envcrypt::envc;
@@ -21,9 +22,10 @@ fn main() -> windows_service::Result<()> {
         envc!("VERGEN_SYSINFO_OS_VERSION"),
         envc!("VERGEN_SYSINFO_USER")
     );
-    windows::run(branch, url, release, info_string)
+    windows::run(branch, url, release, &info_string)
 }
 
+#[cfg(not(target_os = "windows"))]
 fn main() {
     let url = envc!("EDAMAME_HELPER_SENTRY");
     // Needs to be gathered within the target executable's crate
