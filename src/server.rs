@@ -1,4 +1,5 @@
 use edamame_foundation::helper_rx::*;
+use edamame_foundation::helper_rx_utility::*;
 use edamame_foundation::lanscan_mdns::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::runtime::*;
@@ -33,6 +34,9 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
 
     // mDNS discovery
     async_exec(async { mdns_start().await });
+
+    // Interface monitor
+    start_interface_monitor();
 
     let branch = branch.to_string();
     async_exec(async move {
