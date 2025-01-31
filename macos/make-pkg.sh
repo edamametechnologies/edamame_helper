@@ -29,4 +29,3 @@ cp ./macos/preinstall "$TARGET/scripts/"
 cd "$TARGET"
 mkdir -p pkg
 pkgbuild --identifier com.edamametechnologies.edamame-helper --root ./ROOT/ --scripts ./scripts --version "$VERSION" pkg/edamame-helper-unsigned.pkg
-productsign --sign WSL782B48J pkg/edamame-helper-unsigned.pkg pkg/edamame-helper.pkg
