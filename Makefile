@@ -16,15 +16,19 @@ delcachedignore:
 	git ls-files -i -c --exclude-from=.gitignore | xargs git rm --cached
 
 -include ../secrets/aws-writer.env
+-include ../secrets/apple-sign.env
 export
-macos_publish:
+macos_package:
 	cargo build --release --target x86_64-apple-darwin
 	cargo build --release --target aarch64-apple-darwin
 	mkdir -p target/release
 	lipo -create -output target/release/edamame_helper \
     target/x86_64-apple-darwin/release/edamame_helper \
     target/aarch64-apple-darwin/release/edamame_helper
-	./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
+	./macos/make-pkg.sh 
+
+macos_publish: macos_package
+	./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
 
 macos_release:
 	cargo build --release
@@ -39,9 +43,12 @@ windows_debug:
 	# This won't work as it requires service context
 	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./target/debug/edamame_helper.exe
 
--include ../secrets/azure-sign.env
 windows_release:
 	cargo build --release && cargo wix --nocapture --no-build
+
+-include ../secrets/azure-sign.env
+export
+windows_package: windows_release
 	AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper*.msi
 
 version:
