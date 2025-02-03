@@ -9,7 +9,7 @@ description = "This system helper is required for advanced Security Score analys
 
 # EDAMAME foundation
 # Local copy in order to allow rapid development/debug
-#edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture", "asyncpacketcapture"] }
+#edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture", "asyncpacketcapture" ] }
 edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = [ "packetcapture", "asyncpacketcapture" ] }
 
 # Global statics w/ mutex
