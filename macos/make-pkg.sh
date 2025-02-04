@@ -7,6 +7,7 @@ ROOT="Library/Application Support/EDAMAME/EDAMAME-Helper"
 
 # Warning !
 rm -rf "$TARGET/ROOT/"
+
 mkdir -p "$TARGET/ROOT/Library/LaunchDaemons"
 
 cp ./macos/com.edamametechnologies.edamame-helper.plist "$TARGET/ROOT/Library/LaunchDaemons/"
