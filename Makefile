@@ -38,6 +38,10 @@ macos_debug:
 	cargo build
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=debug; rust-lldb ./target/debug/edamame_helper"
 
+macos_profile:
+	cargo build
+	sudo cargo instruments -t "CPU Profiler" --time-limit 30000
+
 windows_debug:
 	cargo build
 	# This won't work as it requires service context
