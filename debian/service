@@ -1,8 +1,0 @@
-[Unit]
-Description=This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application.
-
-[Service]
-ExecStart=/usr/bin/edamame-helper
-
-[Install]
-WantedBy=multi-user.target
