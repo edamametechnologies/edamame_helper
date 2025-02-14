@@ -24,6 +24,7 @@ permissions: write-all
 jobs:
   build:
     runs-on: macos-latest
+    timeout-minutes: 90
 
     env:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
