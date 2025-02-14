@@ -45,4 +45,4 @@ cargo-wix = "0.3.4"
 tonic-build = "0.12.0"
 
 # Build metadata
-vergen = { version = "8.3.1", features = [ "build", "git",  "gitcl", "si" ]}
+vergen-gitcl = { version = "1.0.5", features = [ "build", "cargo", "rustc", "si" ] }
