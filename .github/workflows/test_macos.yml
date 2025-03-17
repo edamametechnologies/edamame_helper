@@ -9,7 +9,6 @@ on:
     paths-ignore:
       - 'windows/**'
       - 'linux/**'
-      - 'snap/**'
       - .github/workflows/**_windows.yml
       - .github/workflows/**_linux.yml
 
