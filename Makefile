@@ -40,7 +40,7 @@ macos_debug:
 
 macos_profile:
 	cargo build
-	sudo -E cargo instruments -t "CPU Profiler" --time-limit 30000
+	sudo -E cargo instruments -t "CPU Profiler" --time-limit 200000
 
 windows_debug:
 	cargo build
