@@ -22,12 +22,10 @@ jobs:
              platform: macos
              file_ext: pkg
              installer: sudo installer -pkg ./downloaded-installer.pkg -target /
-             service_path: /Library/LaunchDaemons/com.edamametech.edamame_helper.plist
            - os: windows-latest
              platform: windows
              file_ext: msi
              installer: powershell -Command "Start-Process msiexec.exe -ArgumentList '/i', 'downloaded-installer.msi', '/quiet', '/norestart' -Wait"
-             service_path:
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -150,7 +148,7 @@ jobs:
           if [[ "${{ matrix.platform }}" == "macos" ]]; then
             # Verify macOS helper installation
             echo "ℹ️ Verifying macOS helper installation"
-            if ! ls -la /Library/LaunchDaemons | grep -q "com.edamametech.edamame_helper.plist"; then
+            if ! ls -la /Library/LaunchDaemons | grep -q "com.edamametechnologies.edamame-helper.plist"; then
               echo "❌ Helper service not found in LaunchDaemons"
               exit 1
             fi
@@ -166,16 +164,49 @@ jobs:
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             # Verify Windows helper installation using PowerShell
             echo "ℹ️ Verifying Windows helper installation"
-            # Check for MSI installation - Note: avoiding echo inside PowerShell command
-            powershell -Command "Get-WmiObject -Class Win32_Product | Where-Object {\`$_.Name -like '*EDAMAME*Helper*'} | Select-Object Name, Version"
-            MSI_RESULT=$?
             
+            # Run PowerShell commands without emoji characters in a separate script file
+            cat > check_windows.ps1 << 'EOF'
+            # Check for MSI installation
+            $msiFound = $false
+            try {
+              $products = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like '*EDAMAME*Helper*' }
+              if ($products) {
+                $products | Select-Object Name, Version
+                $msiFound = $true
+                Write-Output "Helper package found in installed products"
+              } else {
+                Write-Output "Helper package not found in installed products"
+              }
+            } catch {
+              Write-Output "Error checking products: $_"
+            }
+
             # Check for helper service
-            powershell -Command "Get-Service | Where-Object {\`$_.Name -like '*edamame*' -or \`$_.DisplayName -like '*EDAMAME*'} | Select-Object Name, DisplayName, Status"
-            SERVICE_RESULT=$?
+            $serviceFound = $false
+            try {
+              $services = Get-Service | Where-Object { $_.Name -like '*edamame*' -or $_.DisplayName -like '*EDAMAME*' }
+              if ($services) {
+                $services | Select-Object Name, DisplayName, Status
+                $serviceFound = $true
+                Write-Output "Helper service found"
+              } else {
+                Write-Output "Helper service not found"
+              }
+            } catch {
+              Write-Output "Error checking services: $_"
+            }
+
+            # Return success code if either was found
+            if ($msiFound -or $serviceFound) {
+              exit 0
+            } else {
+              exit 1
+            }
+            EOF
             
-            # For Windows CI environment, consider success if either the MSI or service is found
-            if [ $MSI_RESULT -eq 0 ] || [ $SERVICE_RESULT -eq 0 ]; then
+            # Execute the PowerShell script
+            if powershell -File check_windows.ps1; then
               echo "✅ Windows helper verification successful"
             else
               echo "❌ Helper not found in installed products or services"
@@ -200,7 +231,7 @@ jobs:
             fi
             
             # Check launchd has loaded the helper
-            if launchctl list | grep -q "com.edamametech.edamame_helper"; then
+            if launchctl list | grep -q "com.edamametechnologies.edamame-helper"; then
               echo "✅ Helper is loaded by launchd"
               exit 0
             else
@@ -211,8 +242,41 @@ jobs:
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             echo "ℹ️ Checking Windows helper functionality"
             
-            # For Windows, consider the check successful in CI environment
-            # because services might not start properly in CI
+            # For Windows, create a clean PowerShell script without emoji characters
+            cat > check_functionality.ps1 << 'EOF'
+            # Check for service
+            $service = Get-Service -Name "*edamame*" -ErrorAction SilentlyContinue
+            if ($service) {
+              Write-Output "Helper service exists: $($service.Name) - Status: $($service.Status)"
+              
+              if ($service.Status -ne "Running") {
+                Write-Output "Attempting to start service..."
+                Start-Service $service.Name -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 3
+                $service = Get-Service -Name $service.Name
+                if ($service.Status -eq "Running") {
+                  Write-Output "Helper service started successfully"
+                } else {
+                  Write-Output "Helper service could not be started but is installed"
+                }
+              }
+              exit 0
+            }
+            
+            # Check for process if service not found
+            $process = Get-Process -Name "*edamame*helper*" -ErrorAction SilentlyContinue
+            if ($process) {
+              Write-Output "Helper process is running: $($process.Name) - PID: $($process.Id)"
+              exit 0
+            }
+            
+            # Skip actual verification in CI environment
+            Write-Output "Helper not detected as running but considering successful for CI environment"
+            exit 0
+            EOF
+            
+            # Execute the PowerShell script
+            powershell -File check_functionality.ps1
             echo "✅ Skipping detailed service checks in Windows CI environment"
             exit 0
           fi
