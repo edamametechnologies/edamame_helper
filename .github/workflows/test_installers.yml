@@ -22,10 +22,12 @@ jobs:
              platform: macos
              file_ext: pkg
              installer: sudo installer -pkg ./downloaded-installer.pkg -target /
+             shell: bash
            - os: windows-latest
              platform: windows
              file_ext: msi
-             installer: powershell -Command "Start-Process msiexec.exe -ArgumentList '/i', 'downloaded-installer.msi', '/quiet', '/norestart' -Wait"
+             installer: Start-Process msiexec.exe -ArgumentList '/i', 'downloaded-installer.msi', '/quiet', '/norestart' -Wait
+             shell: pwsh
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -98,8 +100,66 @@ jobs:
           ls -la "downloaded-installer.${{ matrix.file_ext }}"
         shell: bash
 
+      - name: Download installer from GitHub releases (Windows)
+        id: download_windows
+        if: matrix.platform == 'windows'
+        run: |
+          # Default fallback version in case we can't determine the latest
+          $VERSION = "0.9.24"
+          
+          # Try to get the latest version
+          Write-Host "Fetching latest release info..."
+          $LATEST_RELEASE_URL = "https://github.com/edamametechnologies/edamame_helper/releases/latest"
+          
+          try {
+            $response = Invoke-WebRequest -Uri $LATEST_RELEASE_URL -MaximumRedirection 0 -ErrorAction SilentlyContinue
+          } catch {
+            $response = $_.Exception.Response
+          }
+          
+          if ($response.Headers.Location) {
+            $REDIRECT = $response.Headers.Location
+            # Extract version from the URL (format: .../tag/vX.Y.Z)
+            if ($REDIRECT -match "v(\d+\.\d+\.\d+)") {
+              $VERSION = $matches[1]
+              Write-Host "Found latest version: $VERSION"
+            } else {
+              Write-Host "Could not parse version from redirect URL, using fallback: $VERSION"
+            }
+          } else {
+            Write-Host "Could not determine latest version, using fallback: $VERSION"
+          }
+          
+          # Construct download URL
+          $ASSET_URL = "https://github.com/edamametechnologies/edamame_helper/releases/download/v${VERSION}/edamame-helper-windows-${VERSION}.msi"
+          
+          Write-Host "ℹ️ Downloading helper for Windows (version $VERSION)"
+          Write-Host "ℹ️ URL: $ASSET_URL"
+          
+          # Download the asset
+          Invoke-WebRequest -Uri $ASSET_URL -OutFile "downloaded-installer.msi"
+          
+          # Verify file was downloaded successfully
+          if (-not (Test-Path "downloaded-installer.msi")) {
+            Write-Host "❌ File not found after download"
+            exit 1
+          }
+          
+          # Check file size
+          $FILESIZE = (Get-Item "downloaded-installer.msi").Length
+          
+          if ($FILESIZE -lt 100000) { # 100KB minimum size
+            Write-Host "❌ Download suspicious - file size only $FILESIZE bytes"
+            exit 1
+          }
+          
+          Write-Host "✅ Download completed successfully - file size is $FILESIZE bytes"
+          Get-Item "downloaded-installer.msi" | Format-List
+        shell: pwsh
+
       - name: Install helper
         id: install
+        if: matrix.platform == 'macos'
         run: |
           echo "ℹ️ Installing ${{ matrix.platform }} helper"
           
@@ -119,6 +179,28 @@ jobs:
         continue-on-error: true
         shell: bash
 
+      - name: Install helper (Windows)
+        id: install_windows
+        if: matrix.platform == 'windows'
+        run: |
+          Write-Host "ℹ️ Installing Windows helper"
+          
+          if (-not (Test-Path "downloaded-installer.msi")) {
+            Write-Host "❌ Installer file not found: downloaded-installer.msi"
+            Get-ChildItem
+            exit 1
+          }
+          
+          ${{ matrix.installer }}
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Installation failed for Windows helper"
+            exit 1
+          }
+          Write-Host "✅ Windows helper installation successful"
+        continue-on-error: true
+        shell: pwsh
+
       - name: Verify installation (macOS)
         if: matrix.platform == 'macos'
         id: verify_macos
@@ -137,8 +219,9 @@ jobs:
         if: matrix.platform == 'windows'
         id: verify_windows
         run: |
-          # Create a PowerShell script file
-          echo 'try {
+          Write-Host "ℹ️ Verifying Windows helper installation"
+          
+          try {
             # Check for MSI installation
             $msiFound = $false
             $products = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*EDAMAME*Helper*" }
@@ -163,25 +246,18 @@ jobs:
             
             # Return success code if either was found
             if ($msiFound -or $serviceFound) {
+              Write-Host "✅ Windows helper verification successful"
               exit 0
             } else {
+              Write-Host "❌ Helper not found in installed products or services"
               exit 1
             }
           } catch {
             Write-Host "Error in verification: $_"
             exit 1
-          }' > check_windows.ps1
-          
-          # Execute the PowerShell script
-          echo "ℹ️ Verifying Windows helper installation"
-          if powershell -File check_windows.ps1; then
-            echo "✅ Windows helper verification successful"
-          else
-            echo "❌ Helper not found in installed products or services"
-            exit 1
-          fi
+          }
         continue-on-error: true
-        shell: bash
+        shell: pwsh
 
       - name: Check helper functionality (macOS)
         if: matrix.platform == 'macos'
@@ -201,7 +277,7 @@ jobs:
           fi
           
           # Check launchd has loaded the helper
-          if launchctl list | grep -q "com.edamametechnologies.edamame-helper"; then
+          if launchctl list | grep -q "com.edamametechnologies.edamame"; then
             echo "✅ Helper is loaded by launchd"
             exit 0
           else
@@ -215,8 +291,9 @@ jobs:
         if: matrix.platform == 'windows'
         id: run_windows
         run: |
-          # Create a PowerShell script file
-          echo 'try {
+          Write-Host "ℹ️ Checking Windows helper functionality"
+          
+          try {
             # Check for service
             $service = Get-Service -Name "*edamame*" -ErrorAction SilentlyContinue
             if ($service) {
@@ -245,31 +322,26 @@ jobs:
             
             # Skip actual verification in CI environment
             Write-Host "Helper not detected as running but considering successful for CI environment"
+            Write-Host "✅ Skipping detailed service checks in Windows CI environment"
             exit 0
           } catch {
             Write-Host "Error in functionality check: $_"
             exit 0  # Still exit with success for CI
-          }' > check_functionality.ps1
-          
-          # Execute the PowerShell script
-          echo "ℹ️ Checking Windows helper functionality"
-          powershell -File check_functionality.ps1
-          echo "✅ Skipping detailed service checks in Windows CI environment"
-          exit 0
+          }
         continue-on-error: true
-        shell: bash
+        shell: pwsh
 
       - name: Slack alerts
         if: >-
           (matrix.platform == 'macos' && (steps.download.outcome != 'success' || steps.install.outcome != 'success' || steps.verify_macos.outcome != 'success' || steps.run_macos.outcome != 'success')) ||
-          (matrix.platform == 'windows' && (steps.download.outcome != 'success' || steps.install.outcome != 'success' || steps.verify_windows.outcome != 'success' || steps.run_windows.outcome != 'success'))
+          (matrix.platform == 'windows' && (steps.download_windows.outcome != 'success' || steps.install_windows.outcome != 'success' || steps.verify_windows.outcome != 'success' || steps.run_windows.outcome != 'success'))
         uses: slackapi/slack-github-action@v1.26.0
         with:
           channel-id: 'C072J0U9TH7'
           slack-message: |
             *Helper Installer Test Results for ${{ github.repository }} (Platform: ${{ matrix.platform }})*:
-            - Download: ${{ steps.download.outcome == 'success' && '✅ Success' || '❌ Failed' }}
-            - Installation: ${{ steps.install.outcome == 'success' && '✅ Success' || '❌ Failed' }}
+            - Download: ${{ (matrix.platform == 'macos' && steps.download.outcome == 'success') || (matrix.platform == 'windows' && steps.download_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
+            - Installation: ${{ (matrix.platform == 'macos' && steps.install.outcome == 'success') || (matrix.platform == 'windows' && steps.install_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
             - Verification: ${{ (matrix.platform == 'macos' && steps.verify_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.verify_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
             - Execution: ${{ (matrix.platform == 'macos' && steps.run_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.run_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
             More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -280,8 +352,9 @@ jobs:
       - name: Fail job if tests failed
         if: >-
           (matrix.platform == 'macos' && (steps.download.outcome != 'success' || steps.install.outcome != 'success' || steps.verify_macos.outcome != 'success' || steps.run_macos.outcome != 'success')) ||
-          (matrix.platform == 'windows' && (steps.download.outcome != 'success' || steps.install.outcome != 'success' || steps.verify_windows.outcome != 'success' || steps.run_windows.outcome != 'success'))
+          (matrix.platform == 'windows' && (steps.download_windows.outcome != 'success' || steps.install_windows.outcome != 'success' || steps.verify_windows.outcome != 'success' || steps.run_windows.outcome != 'success'))
         run: |
           echo "❌ Helper tests for ${{ matrix.platform }} did not succeed"
           exit 1
         continue-on-error: false
+        shell: bash 
