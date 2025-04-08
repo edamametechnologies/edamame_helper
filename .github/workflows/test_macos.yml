@@ -11,6 +11,7 @@ on:
       - 'linux/**'
       - .github/workflows/**_windows.yml
       - .github/workflows/**_linux.yml
+      - .github/workflows/test_installers.yml
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
