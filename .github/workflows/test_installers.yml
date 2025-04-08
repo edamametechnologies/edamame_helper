@@ -128,15 +128,7 @@ jobs:
           if ! ls -la /Library/LaunchDaemons | grep -q "com.edamametechnologies.edamame-helper.plist"; then
             echo "❌ Helper service not found in LaunchDaemons"
             exit 1
-          fi
-          echo "✅ Helper service found in LaunchDaemons"
-          
-          if ! ps aux | grep -q "[e]damame_helper"; then
-            echo "❌ Helper process not running"
-            exit 1
-          fi
-          echo "✅ Helper process is running"
-          
+          fi          
           echo "✅ macOS helper verification successful"
         continue-on-error: true
         shell: bash
@@ -196,6 +188,9 @@ jobs:
         id: run_macos
         run: |
           echo "ℹ️ Checking macOS helper functionality"
+
+          # Wait for 60 seconds to ensure the helper is running
+          sleep 60
           
           # Check helper process is running
           if ps aux | grep -q "[e]damame_helper"; then
