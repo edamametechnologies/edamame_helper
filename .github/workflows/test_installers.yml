@@ -34,57 +34,76 @@ jobs:
       - name: Download installer from GitHub releases
         id: download
         run: |
-          # Default fallback version
+          # Default fallback version in case we can't determine the latest
           VERSION="0.9.24"
+          
+          # Try to get the latest version using curl and simple text processing
+          # This avoids using jq for better cross-platform compatibility
+          echo "Fetching latest release info..."
           LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
-
-          # Platform-specific logic
+          
           if [[ "${{ matrix.platform }}" == "windows" ]]; then
-            # Use PowerShell for Windows operations
+            # PowerShell version for Windows
             powershell -Command "
-              Write-Host 'Fetching latest release info for Windows...'
+              # Try to get the latest version
+              Write-Host 'Fetching latest release info...'
+              
               try {
                 \$response = Invoke-WebRequest -Uri '$LATEST_RELEASE_URL' -MaximumRedirection 0 -ErrorAction SilentlyContinue
               } catch {
                 \$response = \$_.Exception.Response
               }
-
+              
               if (\$response.Headers.Location) {
                 \$REDIRECT = \$response.Headers.Location
+                # Extract version from the URL (format: .../tag/vX.Y.Z)
                 if (\$REDIRECT -match 'v(\\d+\\.\\d+\\.\\d+)') {
                   \$VERSION = \$matches[1]
                   Write-Host \"Found latest version: \$VERSION\"
+                  echo \"VERSION=\$VERSION\" | Out-File -FilePath \$env:GITHUB_ENV -Append
                 } else {
                   Write-Host \"Could not parse version from redirect URL, using fallback: $VERSION\"
+                  echo \"VERSION=$VERSION\" | Out-File -FilePath \$env:GITHUB_ENV -Append
                 }
               } else {
                 Write-Host \"Could not determine latest version, using fallback: $VERSION\"
+                echo \"VERSION=$VERSION\" | Out-File -FilePath \$env:GITHUB_ENV -Append
               }
-              echo \"VERSION=\$VERSION\" | Out-File -FilePath \$env:GITHUB_ENV -Append
-
+              
+              # Construct download URL
               \$ASSET_URL = \"https://github.com/edamametechnologies/edamame_helper/releases/download/v\${env:VERSION}/edamame-helper-windows-\${env:VERSION}.msi\"
-              \$OUT_FILE = \"downloaded-installer.msi\"
-
-              Write-Host \"ℹ️ Downloading helper for Windows (version \${env:VERSION}) from \$ASSET_URL\"
-              Invoke-WebRequest -Uri \$ASSET_URL -OutFile \$OUT_FILE
-
-              if (-not (Test-Path \$OUT_FILE)) { Write-Host \"❌ File not found after download\"; exit 1 }
-              \$FILESIZE = (Get-Item \$OUT_FILE).Length
-              if (\$FILESIZE -lt 100000) { Write-Host \"❌ Download suspicious - file size only \$FILESIZE bytes\"; exit 1 }
+              
+              Write-Host \"ℹ️ Downloading helper for Windows (version \${env:VERSION})\"
+              Write-Host \"ℹ️ URL: \$ASSET_URL\"
+              
+              # Download the asset
+              Invoke-WebRequest -Uri \$ASSET_URL -OutFile \"downloaded-installer.msi\"
+              
+              # Verify file was downloaded successfully
+              if (-not (Test-Path \"downloaded-installer.msi\")) {
+                Write-Host \"❌ File not found after download\"
+                exit 1
+              }
+              
+              # Check file size
+              \$FILESIZE = (Get-Item \"downloaded-installer.msi\").Length
+              
+              if (\$FILESIZE -lt 100000) { # 100KB minimum size
+                Write-Host \"❌ Download suspicious - file size only \$FILESIZE bytes\"
+                exit 1
+              }
+              
               Write-Host \"✅ Download completed successfully - file size is \$FILESIZE bytes\"
-              Get-Item \$OUT_FILE | Format-List
+              Get-Item \"downloaded-installer.msi\" | Format-List
             "
-            # Check PowerShell exit code
-            if [ $? -ne 0 ]; then
-              echo "❌ PowerShell script failed during Windows download."
-              exit 1
-            fi
-
           else
-            # Use Bash for macOS operations
-            echo "Fetching latest release info for macOS..."
-            if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\\r'); then
+            # Bash version for macOS
+            # Get the redirect URL which contains the version
+            # Redirect contains the latest version in the URL
+            if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
+              # Extract version from the URL (format: .../tag/vX.Y.Z)
               if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
+                # Remove the 'v' prefix
                 VERSION="${VERSION_TAG#v}"
                 echo "Found latest version: $VERSION"
               else
@@ -93,21 +112,37 @@ jobs:
             else
               echo "Could not determine latest version, using fallback: $VERSION"
             fi
-            # Export version for subsequent steps
-            echo "VERSION=$VERSION" >> $GITHUB_ENV
-
+            
+            # Construct download URLs based on platform and version
             ASSET_URL="https://github.com/edamametechnologies/edamame_helper/releases/download/v${VERSION}/edamame-helper-macos-${VERSION}.pkg"
-            OUT_FILE="downloaded-installer.${{ matrix.file_ext }}" # Use matrix var for extension
-
-            echo "ℹ️ Downloading helper for macOS (version $VERSION) from $ASSET_URL"
-            curl -L -o "$OUT_FILE" "$ASSET_URL"
-
-            if [ $? -ne 0 ]; then echo "❌ Download failed"; exit 1; fi
-            if [ ! -f "$OUT_FILE" ]; then echo "❌ File not found after download"; exit 1; fi
-            FILESIZE=$(stat -f%z "$OUT_FILE")
-            if [ "$FILESIZE" -lt 100000 ]; then echo "❌ Download suspicious - file size only $FILESIZE bytes"; exit 1; fi
+            
+            echo "ℹ️ Downloading helper for ${{ matrix.platform }} (version $VERSION)"
+            echo "ℹ️ URL: $ASSET_URL"
+            
+            # Download the asset using curl
+            curl -L -o "downloaded-installer.${{ matrix.file_ext }}" "$ASSET_URL"
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ Download failed"
+              exit 1
+            fi
+            
+            # Verify file was downloaded successfully
+            if [ ! -f "downloaded-installer.${{ matrix.file_ext }}" ]; then
+              echo "❌ File not found after download"
+              exit 1
+            fi
+            
+            # Check file size
+            FILESIZE=$(stat -f%z "downloaded-installer.${{ matrix.file_ext }}")
+            
+            if [ "$FILESIZE" -lt 100000 ]; then # 100KB minimum size
+              echo "❌ Download suspicious - file size only $FILESIZE bytes"
+              exit 1
+            fi
+            
             echo "✅ Download completed successfully - file size is $FILESIZE bytes"
-            ls -la "$OUT_FILE"
+            ls -la "downloaded-installer.${{ matrix.file_ext }}"
           fi
         shell: bash
 
