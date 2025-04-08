@@ -12,30 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  fetch-latest-version:
-    runs-on: ubuntu-latest
-    outputs:
-      latest_version: ${{ steps.get_version.outputs.latest_version }}
-      latest_tag: ${{ steps.get_version.outputs.latest_tag }}
-    steps:
-      - name: Get latest release version
-        id: get_version
-        run: |
-          # Fetch latest release using GitHub CLI
-          LATEST_RELEASE=$(gh release list --repo ${{ github.repository }} --limit 1 --json tagName,name,createdAt | jq -r '.[0]')
-          LATEST_TAG=$(echo $LATEST_RELEASE | jq -r '.tagName')
-          LATEST_VERSION=${LATEST_TAG#v}  # Remove 'v' prefix if present
-          
-          echo "Latest release version: $LATEST_VERSION"
-          echo "Latest release tag: $LATEST_TAG"
-          
-          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   test-installers:
-    needs: fetch-latest-version
     timeout-minutes: 10
     strategy:
         fail-fast: false
@@ -54,15 +31,47 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Install jq (macOS)
+        if: matrix.platform == 'macos'
+        run: |
+          if ! command -v jq &> /dev/null; then
+            echo "Installing jq..."
+            brew install jq
+          fi
+        shell: bash
+
+      - name: Install jq (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          if ! where jq &> /dev/null; then
+            echo "Installing jq..."
+            choco install jq -y
+          fi
+        shell: bash
+
       - name: Download installer from GitHub releases
         id: download
         run: |
-          LATEST_VERSION="${{ needs.fetch-latest-version.outputs.latest_version }}"
-          LATEST_TAG="${{ needs.fetch-latest-version.outputs.latest_tag }}"
+          # Get the latest version using the GitHub API (public access, no auth needed)
+          echo "Fetching latest release info..."
+          RELEASES=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases)
           
-          echo "ℹ️ Downloading helper for ${{ matrix.platform }} (version $LATEST_VERSION)"
+          # Check if we have valid JSON
+          if ! echo "$RELEASES" | jq -e . > /dev/null 2>&1; then
+            echo "Error fetching releases or invalid JSON. Response was:"
+            echo "$RELEASES"
+            exit 1
+          fi
           
-          # Download from GitHub releases
+          # Get the latest non-draft, non-prerelease version
+          LATEST_RELEASE=$(echo "$RELEASES" | jq -r '[.[] | select(.draft==false and .prerelease==false)][0]')
+          LATEST_TAG=$(echo "$LATEST_RELEASE" | jq -r '.tag_name')
+          LATEST_VERSION=${LATEST_TAG#v} # Remove 'v' prefix if present
+          
+          echo "Latest release version: $LATEST_VERSION"
+          echo "Latest release tag: $LATEST_TAG"
+          
+          # Get matching asset
           if [[ "${{ matrix.platform }}" == "macos" ]]; then
             ASSET_NAME="edamame-helper-macos-${LATEST_VERSION}.pkg"
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
@@ -72,16 +81,25 @@ jobs:
             exit 1
           fi
           
-          # Download the asset
-          gh release download ${LATEST_TAG} --repo ${{ github.repository }} --pattern "${ASSET_NAME}"
+          # Find the specific asset download URL
+          ASSET_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name=="'$ASSET_NAME'") | .browser_download_url')
+          
+          if [[ -z "$ASSET_URL" ]]; then
+            echo "❌ Asset not found: $ASSET_NAME"
+            echo "Available assets:"
+            echo "$LATEST_RELEASE" | jq -r '.assets[].name'
+            exit 1
+          fi
+          
+          echo "ℹ️ Downloading $ASSET_NAME from: $ASSET_URL"
+          
+          # Download the asset using curl
+          curl -L -o "downloaded-installer.${{ matrix.file_ext }}" "$ASSET_URL"
           
           if [ $? -ne 0 ]; then
             echo "❌ Download failed"
             exit 1
           fi
-          
-          # Rename for consistency in later steps
-          mv "${ASSET_NAME}" "downloaded-installer.${{ matrix.file_ext }}"
           
           # Verify file was downloaded successfully
           if [ ! -f "downloaded-installer.${{ matrix.file_ext }}" ]; then
@@ -90,7 +108,12 @@ jobs:
           fi
           
           # Check file size
-          FILESIZE=$(wc -c < "downloaded-installer.${{ matrix.file_ext }}")
+          if [[ "${{ matrix.platform }}" == "macos" ]]; then
+            FILESIZE=$(stat -f%z "downloaded-installer.${{ matrix.file_ext }}")
+          else
+            FILESIZE=$(stat -c%s "downloaded-installer.${{ matrix.file_ext }}")
+          fi
+          
           if [ "$FILESIZE" -lt 100000 ]; then # 100KB minimum size
             echo "❌ Download suspicious - file size only $FILESIZE bytes"
             exit 1
@@ -98,8 +121,6 @@ jobs:
           
           echo "✅ Download completed successfully - file size is $FILESIZE bytes"
           ls -la "downloaded-installer.${{ matrix.file_ext }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
       - name: Install helper
