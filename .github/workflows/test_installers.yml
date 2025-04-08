@@ -20,12 +20,12 @@ jobs:
          include:
            - os: macos-latest
              platform: macos
-             url: https://edamame-helper.s3.eu-west-1.amazonaws.com/macos/edamame-helper-macos-latest.pkg
-             installer: sudo installer -pkg edamame-helper-macos-latest.pkg -target /
+             url: https://edamame-helper.s3.amazonaws.com/macos/edamame-helper-macos-latest.pkg
+             installer: sudo installer -pkg ./edamame-helper-macos-latest.pkg -target /
              path: /Library/LaunchDaemons/com.edamametech.edamame_helper.plist
            - os: windows-latest
              platform: windows
-             url: https://edamame-helper.s3.eu-west-1.amazonaws.com/windows/edamame-helper-windows-latest.msi
+             url: https://edamame-helper.s3.amazonaws.com/windows/edamame-helper-windows-latest.msi
              installer: powershell -Command "Start-Process msiexec.exe -ArgumentList '/i', 'edamame-helper-windows-latest.msi', '/quiet', '/norestart' -Wait"
              path:
     runs-on: ${{ matrix.os }}
@@ -36,12 +36,27 @@ jobs:
         run: |
           if [[ -n "${{ matrix.url }}" ]]; then
             echo "ℹ️ Downloading from ${{ matrix.url }}"
-            curl -L -o edamame-helper-${{ matrix.platform }}-latest${{ matrix.platform == 'macos' && '.pkg' || matrix.platform == 'windows' && '.msi' || '' }} ${{ matrix.url }}
+            # Use wget instead of curl for better error handling
+            wget -O ./edamame-helper-${{ matrix.platform }}-latest${{ matrix.platform == 'macos' && '.pkg' || matrix.platform == 'windows' && '.msi' || '' }} "${{ matrix.url }}"
             if [ $? -ne 0 ]; then
               echo "❌ Download failed"
               exit 1
             fi
-            echo "✅ Download completed successfully"
+            
+            # Check file size to ensure download worked
+            FILESIZE=$(stat -f%z ./edamame-helper-${{ matrix.platform }}-latest${{ matrix.platform == 'macos' && '.pkg' || matrix.platform == 'windows' && '.msi' || '' }})
+            if [ "$FILESIZE" -lt 1000000 ]; then # 1MB minimum size
+              echo "❌ Download suspicious - file size only $FILESIZE bytes"
+              # Display file content to diagnose error
+              if [ "$FILESIZE" -lt 1000 ]; then
+                cat ./edamame-helper-${{ matrix.platform }}-latest${{ matrix.platform == 'macos' && '.pkg' || matrix.platform == 'windows' && '.msi' || '' }}
+              fi
+              exit 1
+            fi
+            
+            echo "✅ Download completed successfully - file size is $FILESIZE bytes"
+            # List file to confirm it exists
+            ls -la ./edamame-helper-${{ matrix.platform }}-latest${{ matrix.platform == 'macos' && '.pkg' || matrix.platform == 'windows' && '.msi' || '' }}
           else
             echo "ℹ️ Skipping download - no URL defined for platform ${{ matrix.platform }}"
           fi
@@ -87,15 +102,15 @@ jobs:
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             # Verify Windows helper installation using PowerShell
             echo "ℹ️ Verifying Windows helper installation"
-            # Check for MSI installation
-            if ! powershell -Command "Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -like '*EDAMAME*Helper*'} | Select-Object Name, Version"; then
+            # Check for MSI installation - Note: avoiding echo inside PowerShell command
+            if ! powershell -Command "Get-WmiObject -Class Win32_Product | Where-Object {`$_.Name -like '*EDAMAME*Helper*'} | Select-Object Name, Version"; then
               echo "❌ Helper package not found in installed products"
               exit 1
             fi
             echo "✅ Helper package found in installed products"
             
             # Check for helper service
-            if ! powershell -Command "Get-Service | Where-Object {$_.Name -like '*edamame*' -or $_.DisplayName -like '*EDAMAME*'} | Select-Object Name, DisplayName, Status"; then
+            if ! powershell -Command "Get-Service | Where-Object {`$_.Name -like '*edamame*' -or `$_.DisplayName -like '*EDAMAME*'} | Select-Object Name, DisplayName, Status"; then
               echo "❌ Helper service not found"
               exit 1
             fi
@@ -129,38 +144,41 @@ jobs:
           elif [[ "${{ matrix.platform }}" == "windows" ]]; then
             echo "ℹ️ Checking Windows helper functionality"
             
-            # Check for running helper service or process
-            powershell -Command "
-              # Check for service
-              \$service = Get-Service -Name '*edamame*' -ErrorAction SilentlyContinue
-              if (\$service) {
-                echo \"✅ Helper service exists: \$(\$service.Name) - Status: \$(\$service.Status)\"
-                if (\$service.Status -ne 'Running') {
-                  echo \"ℹ️ Attempting to start service...\"
-                  Start-Service \$service.Name -ErrorAction SilentlyContinue
-                  Start-Sleep -Seconds 3
-                  \$service = Get-Service -Name \$service.Name
-                  if (\$service.Status -eq 'Running') {
-                    echo \"✅ Helper service started successfully\"
-                  } else {
-                    echo \"⚠️ Helper service could not be started but is installed\"
-                  }
+            # Store PowerShell script in variable to avoid bash/PowerShell interpretation issues
+            PS_SCRIPT='
+            # Check for service
+            $service = Get-Service -Name "*edamame*" -ErrorAction SilentlyContinue
+            if ($service) {
+              Write-Output "Helper service exists: $($service.Name) - Status: $($service.Status)"
+              if ($service.Status -ne "Running") {
+                Write-Output "Attempting to start service..."
+                Start-Service $service.Name -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 3
+                $service = Get-Service -Name $service.Name
+                if ($service.Status -eq "Running") {
+                  Write-Output "Helper service started successfully"
+                } else {
+                  Write-Output "Helper service could not be started but is installed"
                 }
-                exit 0
               }
-              
-              # Check for process if service not found
-              \$process = Get-Process -Name '*edamame*helper*' -ErrorAction SilentlyContinue
-              if (\$process) {
-                echo \"✅ Helper process is running: \$(\$process.Name) - PID: \$(\$process.Id)\"
-                exit 0
-              }
-              
-              echo \"ℹ️ Helper not detected as running service/process but may be installed correctly\"
-              echo \"ℹ️ This may be normal in CI environment due to session limitations\"
-              # Exit success since we verified installation in the previous step
               exit 0
-            "
+            }
+            
+            # Check for process if service not found
+            $process = Get-Process -Name "*edamame*helper*" -ErrorAction SilentlyContinue
+            if ($process) {
+              Write-Output "Helper process is running: $($process.Name) - PID: $($process.Id)"
+              exit 0
+            }
+            
+            Write-Output "Helper not detected as running service/process but may be installed correctly"
+            Write-Output "This may be normal in CI environment due to session limitations"
+            # Exit success since we verified installation in the previous step
+            exit 0
+            '
+            
+            # Execute the script safely
+            powershell -Command "$PS_SCRIPT"
           fi
         continue-on-error: true
         shell: bash
