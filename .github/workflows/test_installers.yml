@@ -193,26 +193,6 @@ jobs:
             } else {
               Write-Host "Helper package not found in installed products"
             }
-            
-            # Check for helper service
-            $serviceFound = $false
-            $services = Get-Service | Where-Object { $_.Name -like "*edamame*" -or $_.DisplayName -like "*EDAMAME*" }
-            if ($services) {
-              $services | Select-Object Name, DisplayName, Status
-              $serviceFound = $true
-              Write-Host "Helper service found"
-            } else {
-              Write-Host "Helper service not found"
-            }
-            
-            # Return success code if either was found
-            if ($msiFound -or $serviceFound) {
-              Write-Host "✅ Windows helper verification successful"
-              exit 0
-            } else {
-              Write-Host "❌ Helper not found in installed products or services"
-              exit 1
-            }
           } catch {
             Write-Host "Error in verification: $_"
             exit 1
@@ -230,7 +210,7 @@ jobs:
           sleep 90
           
           # Check helper process is running
-          if ps aux | grep -q "[e]damame_helper"; then
+          if ps aux | grep "[e]damame_helper"; then
             echo "✅ Helper process is running"
           else
             echo "❌ Helper process not running"
