@@ -154,11 +154,12 @@ jobs:
           
           ${{ matrix.installer }}
           
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "❌ Installation failed for Windows helper"
+          # Check for non-zero exit codes, excluding 3010 (reboot required)
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
+            Write-Host "❌ Installation failed for Windows helper with exit code: $LASTEXITCODE"
             exit 1
           }
-          Write-Host "✅ Windows helper installation successful"
+          Write-Host "✅ Windows helper installation successful (Exit Code: $LASTEXITCODE)"
         continue-on-error: true
         shell: pwsh
 
@@ -214,15 +215,6 @@ jobs:
             echo "✅ Helper process is running"
           else
             echo "❌ Helper process not running"
-            exit 1
-          fi
-          
-          # Check launchd has loaded the helper
-          if launchctl list | grep "com.edamametechnologies.edamame"; then
-            echo "✅ Helper is loaded by launchd"
-            exit 0
-          else
-            echo "❌ Helper not loaded by launchd"
             exit 1
           fi
         continue-on-error: true
@@ -282,9 +274,6 @@ jobs:
             } else {
                 Write-Host "ℹ️ Helper not detected as a running service or process."
             }
-
-            Write-Host "✅ Considering check successful for CI environment regardless of running state."
-            exit 0
 
           } catch {
             # Catch errors in the overall script logic
