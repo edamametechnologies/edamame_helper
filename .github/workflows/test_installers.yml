@@ -92,15 +92,29 @@ jobs:
           fi
           
           # Check file size
-          FILESIZE=$(stat -f%z "downloaded-installer.${{ matrix.file_ext }}")
-          
-          if [ "$FILESIZE" -lt 100000 ]; then # 100KB minimum size
-            echo "❌ Download suspicious - file size only $FILESIZE bytes"
-            exit 1
+          if [ "${{ matrix.platform }}" == "macos" ]; then
+            FILESIZE=$(stat -f%z "downloaded-installer.${{ matrix.file_ext }}")
+            
+            if [ "$FILESIZE" -lt 100000 ]; then # 100KB minimum size
+              echo "❌ Download suspicious - file size only $FILESIZE bytes"
+              exit 1
+            fi
+            
+            echo "✅ Download completed successfully - file size is $FILESIZE bytes"
+            ls -la "downloaded-installer.${{ matrix.file_ext }}"
+          elif [ "${{ matrix.platform }}" == "windows" ]; then
+            # Use PowerShell to get file size on Windows
+            FILESIZE=$(powershell.exe -Command "(Get-Item -Path '.\downloaded-installer.${{ matrix.file_ext }}').Length")
+            
+            # Basic check if FILESIZE is a number and greater than 0 before comparison
+            if ! [[ "$FILESIZE" =~ ^[0-9]+$ ]] || [ "$FILESIZE" -lt 100000 ]; then # 100KB minimum size
+              echo "❌ Download suspicious - file size only $FILESIZE bytes (or failed to get size)"
+              exit 1
+            fi
+            
+            echo "✅ Download completed successfully - file size is $FILESIZE bytes"
+            ls -la "downloaded-installer.${{ matrix.file_ext }}"
           fi
-          
-          echo "✅ Download completed successfully - file size is $FILESIZE bytes"
-          ls -la "downloaded-installer.${{ matrix.file_ext }}"
 
         shell: bash
 
@@ -288,9 +302,9 @@ jobs:
           slack-message: |
             *Helper Installer Test Results for ${{ github.repository }} (Platform: ${{ matrix.platform }})*:
             - Download: ${{ steps.download.outcome == 'success' && '✅ Success' || '❌ Failed' }}
-            - Installation: ${{ (matrix.platform == 'macos' && steps.install.outcome == 'success') || (matrix.platform == 'windows' && steps.install_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
-            - Verification: ${{ (matrix.platform == 'macos' && steps.verify_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.verify_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
-            - Execution: ${{ (matrix.platform == 'macos' && steps.run_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.run_windows.outcome == 'success') && '✅ Success' || '❌ Failed' }}
+            - Installation: ${{ ((matrix.platform == 'macos' && steps.install.outcome == 'success') || (matrix.platform == 'windows' && steps.install_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
+            - Verification: ${{ ((matrix.platform == 'macos' && steps.verify_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.verify_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
+            - Execution: ${{ ((matrix.platform == 'macos' && steps.run_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.run_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
             More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
