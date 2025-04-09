@@ -168,7 +168,7 @@ jobs:
         run: |
           # Verify macOS helper installation
           echo "ℹ️ Verifying macOS helper installation"
-          if ! ls -la /Library/LaunchDaemons | grep -q "com.edamametechnologies.edamame-helper.plist"; then
+          if ! ls -la /Library/LaunchDaemons | grep "com.edamametechnologies.edamame-helper.plist"; then
             echo "❌ Helper service not found in LaunchDaemons"
             exit 1
           fi          
@@ -238,7 +238,7 @@ jobs:
           fi
           
           # Check launchd has loaded the helper
-          if launchctl list | grep -q "com.edamametechnologies.edamame"; then
+          if launchctl list | grep "com.edamametechnologies.edamame"; then
             echo "✅ Helper is loaded by launchd"
             exit 0
           else
