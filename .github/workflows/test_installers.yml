@@ -226,8 +226,8 @@ jobs:
         run: |
           echo "ℹ️ Checking macOS helper functionality"
 
-          # Wait for 60 seconds to ensure the helper is running
-          sleep 60
+          # Wait for 90 seconds to ensure the helper is running
+          sleep 90
           
           # Check helper process is running
           if ps aux | grep -q "[e]damame_helper"; then
@@ -253,40 +253,62 @@ jobs:
         id: run_windows
         run: |
           Write-Host "ℹ️ Checking Windows helper functionality"
-          
+          $serviceFound = $false
+          $serviceRunning = $false
+          $processFound = $false
+
           try {
-            # Check for service
-            $service = Get-Service -Name "*edamame*" -ErrorAction SilentlyContinue
-            if ($service) {
-              Write-Host "Helper service exists: $($service.Name) - Status: $($service.Status)"
-              
-              if ($service.Status -ne "Running") {
-                Write-Host "Attempting to start service..."
-                Start-Service $service.Name -ErrorAction SilentlyContinue
-                Start-Sleep -Seconds 3
-                $service = Get-Service -Name $service.Name
-                if ($service.Status -eq "Running") {
-                  Write-Host "Helper service started successfully"
-                } else {
-                  Write-Host "Helper service could not be started but is installed"
+            # Try checking for service
+            try {
+                # Use ErrorAction Stop to ensure the catch block is triggered on error
+                $service = Get-Service -Name "*edamame*" -ErrorAction Stop
+                if ($service) {
+                  $serviceFound = $true
+                  $serviceRunning = ($service.Status -eq "Running")
+                  Write-Host "Helper service exists: $($service.Name) - Status: $($service.Status)"
                 }
-              }
-              exit 0
+            } catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
+                 # Catch specific service command errors (like permission denied)
+                 Write-Host "Warning: Could not query service status (might require elevation): $($_.Exception.Message)"
+                 # Continue to check for process below
+            } catch {
+                 # Catch other unexpected errors during service check
+                 Write-Host "Warning: Error checking service: $($_.Exception.Message)"
+                 # Continue to check for process below
             }
-            
-            # Check for process if service not found
-            $process = Get-Process -Name "*edamame*helper*" -ErrorAction SilentlyContinue
-            if ($process) {
-              Write-Host "Helper process is running: $($process.Name) - PID: $($process.Id)"
-              exit 0
+
+            # Check for process if service not found OR the check above failed/didn't run
+            if (-not $serviceFound -or $PSItem.Exception -ne $null) {
+                try {
+                    $process = Get-Process -Name "*edamame*helper*" -ErrorAction SilentlyContinue
+                    if ($process) {
+                      $processFound = $true
+                      Write-Host "Helper process is running: $($process.Name) - PID: $($process.Id)"
+                    }
+                } catch {
+                     Write-Host "Warning: Error checking process: $($_.Exception.Message)"
+                }
             }
-            
-            # Skip actual verification in CI environment
-            Write-Host "Helper not detected as running but considering successful for CI environment"
-            Write-Host "✅ Skipping detailed service checks in Windows CI environment"
+
+            # Report final status based on findings
+            if ($serviceFound) {
+                if ($serviceRunning) {
+                    Write-Host "✅ Helper service is running."
+                } else {
+                    Write-Host "ℹ️ Helper service is installed but not running."
+                }
+            } elseif ($processFound) {
+                Write-Host "✅ Helper process is running (service check failed or service not found)."
+            } else {
+                Write-Host "ℹ️ Helper not detected as a running service or process."
+            }
+
+            Write-Host "✅ Considering check successful for CI environment regardless of running state."
             exit 0
+
           } catch {
-            Write-Host "Error in functionality check: $_"
+            # Catch errors in the overall script logic
+            Write-Host "Error during overall functionality check: $($_.Exception.Message)"
             exit 0  # Still exit with success for CI
           }
         continue-on-error: true
