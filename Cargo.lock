@@ -1039,7 +1039,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 [[package]]
 name = "edamame_backend"
 version = "0.3.4"
-source = "git+https://github.com/edamametechnologies/edamame_backend#ac36f2a89ac35961c04d590ee9d49bedb48fb493"
+source = "git+https://github.com/edamametechnologies/edamame_backend#60208d8bd0e56547e897e0cc0f8d983a5f14117b"
 dependencies = [
  "anyhow",
  "blake3",
@@ -1052,8 +1052,8 @@ dependencies = [
 
 [[package]]
 name = "edamame_foundation"
-version = "0.9.25"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#38022e3455711c2f01e9907c7ffb59eb68051aa7"
+version = "0.9.26"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#a1718b83911cbacdca711fdf1c0ff61777b1f7de"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1119,7 +1119,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.9.25"
+version = "0.9.26"
 dependencies = [
  "base64",
  "cargo-wix",
