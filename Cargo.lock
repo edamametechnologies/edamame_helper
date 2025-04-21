@@ -1053,7 +1053,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.28"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#da9a27a7100c9c1d5b3bfb47bac852526d978bfd"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#d5b30acacdb3519ca89911d4c373429f4f1c3dc9"
 dependencies = [
  "anyhow",
  "arp-toolkit",
