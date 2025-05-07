@@ -34,9 +34,13 @@ macos_release:
 	cargo build --release
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=info; ./target/release/edamame_helper"
 
+macos_debug_console:
+	RUSTFLAGS="--cfg tokio_unstable" cargo build
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./target/debug/edamame_helper"
+
 macos_debug:
 	cargo build
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=edamame_foundation=debug; rust-lldb ./target/debug/edamame_helper"
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,edamame_foundation::customlock::debug; rust-lldb ./target/debug/edamame_helper"
 
 macos_profile:
 	cargo build
