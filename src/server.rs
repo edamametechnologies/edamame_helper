@@ -1,6 +1,6 @@
 use edamame_foundation::helper_rx::*;
 use edamame_foundation::helper_rx_utility::*;
-use edamame_foundation::lanscan_mdns::*;
+use edamame_foundation::lanscan::mdns::*;
 use edamame_foundation::logger::*;
 use edamame_foundation::runtime::*;
 use envcrypt::envc;
