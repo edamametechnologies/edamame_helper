@@ -1,9 +1,8 @@
 use edamame_foundation::helper_rx::*;
 use edamame_foundation::helper_rx_utility::*;
-use edamame_foundation::lanscan::mdns::*;
 use edamame_foundation::logger::*;
-use edamame_foundation::runtime::*;
 use envcrypt::envc;
+use flodbadd::mdns::*;
 use lazy_static::lazy_static;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -30,16 +29,16 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
     info!("{}", info_string);
 
     // Must be after sentry
-    async_init();
+    edamame_foundation::runtime::init();
 
     // mDNS discovery
-    async_exec(async { mdns_start().await });
+    edamame_foundation::runtime::block_on(async { mdns_start().await });
 
     // Interface monitor
     start_interface_monitor();
 
     let branch = branch.to_string();
-    async_exec(async move {
+    edamame_foundation::runtime::block_on(async move {
         // RPC server
         match SERVER_CONTROL
             .lock()
@@ -63,7 +62,7 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
 pub fn stop_server() {
     mdns_stop();
 
-    async_exec(async {
+    edamame_foundation::runtime::block_on(async {
         match SERVER_CONTROL.lock().await.stop_server().await {
             Ok(_) => info!("Server stopped"),
             Err(e) => error!("Server stop error: {}", e),
