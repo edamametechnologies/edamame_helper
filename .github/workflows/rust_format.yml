@@ -3,12 +3,18 @@ on:
     branches: [ dev, main ]
   pull_request:
 
-name: Rust Format
+# Auto cancel previous runs if they were not completed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+name: Rust format
 
 jobs:
   fmt:
     name: Check Rust
     runs-on: ubuntu-latest
+    
     steps:
 
       - name: Setup EDAMAME Posture
@@ -19,16 +25,10 @@ jobs:
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
           checkout: true
-          
-      - run: rustup component add rustfmt
 
-      - run: |
-          # Install protobuf
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler
+      - run: rustup component add rustfmt
 
       - name: Check code format
         run: |
           cargo fmt --all -- --check
-
 
