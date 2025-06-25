@@ -1153,7 +1153,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.44"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#81242fa6c2fbee1ee6bb6dabe002748a7035c147"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#91a969d6e30984d205d4deecdfce9e6bef6a5d72"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1471,7 +1471,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "0.9.44"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#988fcf51236ccefb0e4e3cb70e58236a45ef6d8a"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#85ba929019816512225c427951b4137357ca03aa"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1514,6 +1514,7 @@ dependencies = [
  "tokio",
  "tracing",
  "undeadlock",
+ "users",
  "uuid",
  "wez-mdns",
  "windows 0.61.3",
