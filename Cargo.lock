@@ -681,9 +681,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.29"
+version = "1.2.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c1599538de2394445747c8cf7935946e3cc27e9625f889d979bfb2aaf569362"
+checksum = "deec109607ca693028562ed836a5f1c4b8bd77755c4e132fc5ce11b0b6211ae7"
 dependencies = [
  "jobserver",
  "libc",
@@ -1153,7 +1153,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.50"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#9abe00d0fd5c0e9504fe37505e82a173beac126e"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#8c1ef4e78d5423bed3e6909aea0f7e3109ca5a89"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1471,7 +1471,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "0.9.50"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#15cd6b44fa0a992058f2ea7c2c77f9ab0bf5cd0a"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#2b2f19cb8ebca62ee439964910e213b38866460b"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1943,7 +1943,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
@@ -3487,7 +3487,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
@@ -4853,14 +4853,14 @@ version = "0.26.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521bc38abb08001b01866da9f51eb7c5d647a19260e00054a8c7fd5f9e57f7a9"
 dependencies = [
- "webpki-roots 1.0.1",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8782dd5a41a24eed3a4f40b606249b3e236ca61adf1f25ea4d45c73de122b502"
+checksum = "7e8983c3ab33d6fb807cfcdad2491c4ea8cbc8ed839181c7dfd9c67c83e261b2"
 dependencies = [
  "rustls-pki-types",
 ]
