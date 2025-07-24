@@ -40,7 +40,7 @@ macos_debug_console:
 
 macos_debug:
 	cargo build
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,undeadlock::debug; rust-lldb ./target/debug/edamame_helper"
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=debug,undeadlock::debug; rust-lldb ./target/debug/edamame_helper"
 
 macos_profile:
 	cargo build
