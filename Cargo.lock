@@ -1151,8 +1151,8 @@ dependencies = [
 
 [[package]]
 name = "edamame_foundation"
-version = "0.9.53"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#54e8f1fbe80905698bebbc545626ee4c03f53cd3"
+version = "0.9.54"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#5efddc5bbc4d90ea1c7ce94734ae348955c2f651"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1214,7 +1214,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.9.53"
+version = "0.9.54"
 dependencies = [
  "base64 0.22.1",
  "cargo-wix",
