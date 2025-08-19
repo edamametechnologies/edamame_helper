@@ -13,7 +13,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-2025
+    runs-on: windows-2019
 
     env:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
@@ -61,7 +61,7 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: | 
-          cargo build --release --verbose
+          cargo build --release
           cargo wix --nocapture --no-build
 
       - name: Signing of the Helper
