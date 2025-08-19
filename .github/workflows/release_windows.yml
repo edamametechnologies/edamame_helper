@@ -13,7 +13,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: vm-runner-windows
 
     env:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
@@ -32,6 +32,9 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
+
+      - name: Clean workspace
+        run: rm -rf ${{ github.workspace }}/*
 
       - name: Setup EDAMAME Posture
         if: github.ref == 'refs/heads/main'
@@ -54,7 +57,6 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.88.0
           targets: x86_64-pc-windows-msvc
 
       - name: Setup for edamame_helper

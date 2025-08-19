@@ -24,7 +24,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: vm-runner-windows
     timeout-minutes: 90
 
     env:
@@ -45,6 +45,9 @@ jobs:
 
     steps:
 
+      - name: Clean workspace
+        run: rm -rf ${{ github.workspace }}/*
+
       - name: Setup EDAMAME Posture
         if: github.ref == 'refs/heads/main'
         uses: edamametechnologies/edamame_posture_action@v0
@@ -63,7 +66,6 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.88.0
           targets: x86_64-pc-windows-msvc
 
       - name: Setup for edamame_helper

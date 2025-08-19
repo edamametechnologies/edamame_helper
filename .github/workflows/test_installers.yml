@@ -18,17 +18,19 @@ jobs:
         fail-fast: false
         matrix:
          include:
-           - os: macos-latest
+           - os: macos
+             runs-on: macos-latest
              platform: macos
              file_ext: pkg
              installer: sudo installer -pkg ./downloaded-installer.pkg -target /
              shell: bash
-           - os: windows-latest
+           - os: windows
+             runs-on: vm-runner-windows
              platform: windows
              file_ext: msi
              installer: Start-Process msiexec.exe -ArgumentList '/i', 'downloaded-installer.msi', '/quiet', '/norestart' -Wait
              shell: pwsh
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runs-on }}
 
     steps:
       - name: Download installer from GitHub releases
