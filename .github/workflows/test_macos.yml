@@ -45,6 +45,7 @@ jobs:
     steps:
 
       - name: Clean workspace
+        shell: bash
         run: rm -rf ${{ github.workspace }}/*
 
       - name: Setup EDAMAME Posture
