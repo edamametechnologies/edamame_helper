@@ -61,7 +61,7 @@ jobs:
       - name: Build helper and its standalone installer
         shell: bash
         run: | 
-          cargo build --release
+          cargo build --release --verbose
           cargo wix --nocapture --no-build
 
       - name: Signing of the Helper
