@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'dev'
-      - 'main'
+      - "dev"
+      - "main"
     paths-ignore:
-      - 'macos/**'
-      - 'linux/**'
-      - 'snap/**'
+      - "macos/**"
+      - "linux/**"
+      - "snap/**"
       - .github/workflows/**_macos.yml
       - .github/workflows/**_linux.yml
       - .github/workflows/test_installers.yml
@@ -24,7 +24,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: vm-runner-windows
     timeout-minutes: 90
 
     env:
@@ -44,7 +44,6 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-
       - name: Setup EDAMAME Posture
         if: github.ref == 'refs/heads/main'
         uses: edamametechnologies/edamame_posture_action@v0
@@ -75,7 +74,7 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: | 
+        run: |
           cargo build --release
           cargo wix --nocapture --no-build
 
@@ -118,7 +117,7 @@ jobs:
         if: steps.tests.outcome != 'success'
         uses: slackapi/slack-github-action@v1.26.0
         with:
-          channel-id: 'C072J0U9TH7'
+          channel-id: "C072J0U9TH7"
           slack-message: "Tests ran in ${{ github.workflow }} for ${{ github.repository }} for ${{ runner.os }} on branch ${{ github.ref }} failed: see https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
