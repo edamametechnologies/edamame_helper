@@ -13,7 +13,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: runner-windows
 
     env:
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
