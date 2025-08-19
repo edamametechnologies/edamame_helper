@@ -63,6 +63,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.88.0
           targets: x86_64-pc-windows-msvc
 
       - name: Setup for edamame_helper
