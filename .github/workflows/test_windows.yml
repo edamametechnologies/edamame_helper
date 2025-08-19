@@ -60,6 +60,11 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
       - name: Setup for edamame_helper
         shell: bash
         run: |
