@@ -46,7 +46,7 @@ jobs:
 
       - name: Clean workspace
         shell: bash
-        run: rm -rf ${{ github.workspace }}/*
+        run: rm -rf ${{ github.workspace }}
 
       - name: Setup EDAMAME Posture
         uses: edamametechnologies/edamame_posture_action@v0
