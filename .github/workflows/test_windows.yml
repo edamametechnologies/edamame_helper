@@ -45,10 +45,6 @@ jobs:
 
     steps:
 
-      - name: Clean workspace
-        shell: bash
-        run: rm -rf ${{ github.workspace }}
-
       - name: Setup EDAMAME Posture
         if: github.ref == 'refs/heads/main'
         uses: edamametechnologies/edamame_posture_action@v0
