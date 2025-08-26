@@ -24,7 +24,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: vm-runner-windows
+    runs-on: windows-latest
     timeout-minutes: 90
 
     env:
