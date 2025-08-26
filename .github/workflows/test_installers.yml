@@ -25,7 +25,7 @@ jobs:
              installer: sudo installer -pkg ./downloaded-installer.pkg -target /
              shell: bash
            - os: windows
-             runs-on: vm-runner-windows
+             runs-on: windows-latest
              platform: windows
              file_ext: msi
              installer: Start-Process msiexec.exe -ArgumentList '/i', 'downloaded-installer.msi', '/quiet', '/norestart' -Wait
