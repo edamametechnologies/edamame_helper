@@ -22,12 +22,11 @@ flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "
 lazy_static = "1.5.0"
 
 # Logging
-tracing = "0.1.40"
+tracing = "0.1.41"
 
 # gRPC server/client
-tonic = { version = "0.13.0", features = ["_tls-any"] }
-# 0.14 has breaking changes
-prost = "0.13.5"
+tonic = { version = "0.14.2", features = ["_tls-any"] }
+prost = "0.14.1"
 base64 = "0.22.1"
 
 # CLI support
@@ -35,8 +34,8 @@ run_script = "0.11.0"
 
 # Async
 # For tokio debugging
-tokio = { version = "1.39.2", features = ["full", "tracing"] }
-console-subscriber = "0.4.0"
+tokio = { version = "1.47.1", features = ["full", "tracing"] }
+console-subscriber = "0.4.1"
 
 # Encrypted env (weak)
 envcrypt = "0.5.0"
@@ -44,11 +43,11 @@ envcrypt = "0.5.0"
 # Windows
 [target.'cfg(any(target_os = "windows"))'.dependencies]
 windows-service = "0.8.0"
-cargo-wix = "0.3.4"
+cargo-wix = "0.3.9"
 
 [build-dependencies]
 # protobuf->Rust compiler
-tonic-build = "0.13.0"
+tonic-build = "0.14.2"
 
 # Build metadata
-vergen-gitcl = { version = "1.0.5", features = [ "build", "cargo", "rustc", "si" ] }
+vergen-gitcl = { version = "1.0.8", features = [ "build", "cargo", "rustc", "si" ] }
