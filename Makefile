@@ -49,7 +49,9 @@ macos_profile:
 windows_debug:
 	cargo build
 	# This won't work as it requires service context
-	#export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./target/debug/edamame_helper.exe
+	cp -f ./windows/Packet.dll ./target/debug/Packet.dll
+	cp -f ./windows/wpcap.dll ./target/debug/wpcap.dll
+	export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./target/debug/edamame_helper.exe
 
 windows_release:
 	cargo build --release && cargo wix --nocapture --no-build
