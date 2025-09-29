@@ -403,11 +403,11 @@ dependencies = [
 
 [[package]]
 name = "axum"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "021e862c184ae977658b36c4500f7feac3221ca5da43e3f25bd04ab6c79a29b5"
+checksum = "98e529aee37b5c8206bb4bf4c44797127566d72f76952c970bd3d1e85de8f4e2"
 dependencies = [
- "axum-core 0.5.2",
+ "axum-core 0.5.3",
  "bytes",
  "futures-util",
  "http",
@@ -419,8 +419,7 @@ dependencies = [
  "mime",
  "percent-encoding",
  "pin-project-lite",
- "rustversion",
- "serde",
+ "serde_core",
  "sync_wrapper",
  "tower 0.5.2",
  "tower-layer",
@@ -449,9 +448,9 @@ dependencies = [
 
 [[package]]
 name = "axum-core"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68464cd0412f486726fb3373129ef5d2993f90c34bc2bc1c1e9943b2f4fc7ca6"
+checksum = "f9bcffc1a1d0c6a74823b55df1f1c829c0d49e884518c021cc4d93471f772b1f"
 dependencies = [
  "bytes",
  "futures-core",
@@ -1194,7 +1193,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.68"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#3b9c2d37f36ee5312067deb4214e2a2dc498ea9c"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#cfcaf33a1bbb4eaa981d761930131924806b2db5"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1208,7 +1207,7 @@ dependencies = [
  "edamame_models",
  "encoding_rs",
  "envcrypt",
- "flodbadd 0.9.68 (git+https://github.com/edamametechnologies/flodbadd?branch=main)",
+ "flodbadd",
  "futures",
  "futures-util",
  "hex",
@@ -1263,7 +1262,7 @@ dependencies = [
  "console-subscriber",
  "edamame_foundation",
  "envcrypt",
- "flodbadd 0.9.68",
+ "flodbadd",
  "lazy_static",
  "prost 0.14.1",
  "run_script",
@@ -1518,61 +1517,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "0.9.68"
-dependencies = [
- "anyhow",
- "arc-swap",
- "arp-toolkit",
- "chrono",
- "csv",
- "dashmap",
- "dns-parser",
- "edamame_backend",
- "edamame_models",
- "encoding_rs",
- "eui48",
- "extended-isolation-forest",
- "futures",
- "futures-util",
- "hex",
- "hickory-resolver",
- "ipnet",
- "lazy_static",
- "macaddr",
- "netstat2",
- "network-interface",
- "once_cell",
- "oui",
- "parking_lot",
- "pcap",
- "pnet_packet 0.35.0",
- "powershell_script",
- "rand 0.9.2",
- "rayon",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "serial_test",
- "sha2",
- "socket2 0.6.0",
- "sorted-vec",
- "strum_macros",
- "sysinfo 0.37.1",
- "thiserror 2.0.16",
- "tokio",
- "tracing",
- "undeadlock",
- "users",
- "uuid",
- "wez-mdns",
- "windows 0.62.1",
- "zip",
-]
-
-[[package]]
-name = "flodbadd"
-version = "0.9.68"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#9cc96d1675f459b2adfbe295ccc869c3f0d78e7a"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#12f285a575905d003fa09180367ddb283ba2249b"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -3874,9 +3819,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.227"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80ece43fc6fbed4eb5392ab50c07334d3e577cbf40997ee896fe7af40bba4245"
+checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
 dependencies = [
  "serde_core",
  "serde_derive",
@@ -3884,18 +3829,18 @@ dependencies = [
 
 [[package]]
 name = "serde_core"
-version = "1.0.227"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a576275b607a2c86ea29e410193df32bc680303c82f31e275bbfcafe8b33be5"
+checksum = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.227"
+version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51e694923b8824cf0e9b382adf0f60d4e05f348f357b38833a3fa5ed7c2ede04"
+checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4483,7 +4428,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb7613188ce9f7df5bfe185db26c5814347d110db17920415cf2fbcad85e7203"
 dependencies = [
  "async-trait",
- "axum 0.8.4",
+ "axum 0.8.5",
  "base64 0.22.1",
  "bytes",
  "h2",

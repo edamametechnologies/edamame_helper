@@ -15,8 +15,8 @@ debug = true
 #edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture" ] }
 edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = [ "packetcapture" ] }
 # Local copy in order to allow rapid development/debug
-flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture" ] }
-#flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture" ] }
+#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture" ] }
+flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture" ] }
 
 # Global statics w/ mutex
 lazy_static = "1.5.0"
