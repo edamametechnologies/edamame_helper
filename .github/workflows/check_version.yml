@@ -30,7 +30,7 @@ jobs:
       - name: Compare versions
         run: |
           # Current branch version
-          grep "EDAMAME_HELPER_VERSION" .env | cut -d"=" -f2 | grep -o "[0-9]*" > cb_version
+          grep "version" Cargo.toml | cut -d"=" -f2 | grep -o "[0-9]*" > cb_version
           CB_MAJOR=$(cat cb_version | head -1)
           CB_MINOR=$(cat cb_version | head -2 | tail -1)
           CB_PATCH=$(cat cb_version | head -3 | tail -1)
@@ -39,7 +39,7 @@ jobs:
           git fetch origin
           git checkout main
           git pull
-          grep "EDAMAME_HELPER_VERSION" .env | cut -d"=" -f2 | grep -o "[0-9]*" > main_version
+          grep "version" Cargo.toml | cut -d"=" -f2 | grep -o "[0-9]*" > main_version
           MAIN_MAJOR=$(cat main_version | head -1)
           MAIN_MINOR=$(cat main_version | head -2 | tail -1)
           MAIN_PATCH=$(cat main_version | head -3 | tail -1)
