@@ -1,15 +1,10 @@
 .PHONY: upgrade unused_dependencies format clean test
 
-include ./.env
-
 # Import and export env for edamame_core and edamame_foundation
 -include ../secrets/lambda-signature.env
 -include ../secrets/foundation.env
 -include ../secrets/sentry.env
 export
-
-env:
-	env
 
 delcachedignore:
 	# Remove files from the index (do not delete them from the filesystem) - limited to the base .gitignore
@@ -60,9 +55,6 @@ windows_release:
 export
 windows_package: windows_release
 	AzureSignTool sign -kvu "${AZURE_SIGN_KEY_VAULT_URI}" -kvi "${AZURE_SIGN_CLIENT_ID}" -kvt "${AZURE_SIGN_TENANT_ID}" -kvs "${AZURE_SIGN_CLIENT_SECRET}" -kvc ${AZURE_SIGN_CERT_NAME} -tr http://timestamp.digicert.com -v ./target/wix/edamame_helper*.msi
-
-version:
-	cargo set-version $(EDAMAME_HELPER_VERSION)
 
 upgrade:
 	rustup update
