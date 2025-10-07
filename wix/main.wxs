@@ -129,26 +129,6 @@
                                  ThirdFailureActionType="none" />
                          </Component>
 
-                         <!-- Component for Packet.dll -->
-                         <Component Id='PacketDllComponent' Guid='*'>
-                             <File
-                                 Id='PacketDll'
-                                 Name='Packet.dll'
-                                 DiskId='1'
-                                 Source='windows\Packet.dll'
-                                 KeyPath='yes'/>
-                         </Component>
-
-                         <!-- Component for wpcap.dll -->
-                         <Component Id='wpcapDllComponent' Guid='*'>
-                             <File
-                                 Id='wpcapDll'
-                                 Name='wpcap.dll'
-                                 DiskId='1'
-                                 Source='windows\wpcap.dll'
-                                 KeyPath='yes'/>
-                         </Component>
-
                     </Directory>
 
                 </Directory>
@@ -166,8 +146,6 @@
             Absent='disallow'>
             
             <ComponentRef Id='ExeComponent'/>
-            <ComponentRef Id='PacketDllComponent'/>
-            <ComponentRef Id='wpcapDllComponent'/>
         </Feature>
 
         <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize'/>
