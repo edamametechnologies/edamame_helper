@@ -35,7 +35,7 @@ macos_debug_console:
 
 macos_debug:
 	cargo build
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=debug,undeadlock::debug; rust-lldb ./target/debug/edamame_helper"
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,undeadlock::info; rust-lldb ./target/debug/edamame_helper"
 
 macos_profile:
 	cargo build
@@ -43,9 +43,6 @@ macos_profile:
 
 windows_debug:
 	cargo build
-	# This won't work as it requires service context
-	cp -f ./windows/Packet.dll ./target/debug/Packet.dll
-	cp -f ./windows/wpcap.dll ./target/debug/wpcap.dll
 	export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info; ./target/debug/edamame_helper.exe
 
 windows_release:
