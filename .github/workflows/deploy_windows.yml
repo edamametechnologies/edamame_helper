@@ -42,8 +42,7 @@ jobs:
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
           auto_remediate: true
-          # Disabled as GitHub managed Windows runners configuration makes this too slow
-          network_scan: false
+          network_scan: true
           checkout: true
 
       - name: Install additional packages w/ Chocolatey
