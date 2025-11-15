@@ -60,23 +60,6 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
-      - name: Install Npcap runtime if not already installed
-        shell: powershell
-        run: |
-          if (-not (Test-Path "C:\Program Files\Npcap")) {
-            Write-Host "Npcap not installed, installing from archive"
-
-            $ErrorActionPreference = "Stop"
-            $runtimeUrl = "https://web.archive.org/web/20220523140209/https://npcap.com/dist/npcap-0.96.exe"
-            $runtimeInstaller = "$env:TEMP\npcap-runtime.exe"
-            Write-Host "Downloading Npcap runtime from $runtimeUrl"
-            Invoke-WebRequest -Uri $runtimeUrl -OutFile $runtimeInstaller
-            Write-Host "Installing Npcap runtime silently"
-            Start-Process -FilePath $runtimeInstaller -ArgumentList "/S" -Wait
-            Start-Sleep -Seconds 5
-            Remove-Item $runtimeInstaller -Force
-          }
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
