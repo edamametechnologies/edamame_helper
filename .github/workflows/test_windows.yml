@@ -60,39 +60,22 @@ jobs:
           choco install protoc wget
           dotnet tool install --global AzureSignTool
 
-      - name: Install Npcap runtime and SDK from archive
+      - name: Install Npcap runtime if not already installed
         shell: powershell
         run: |
-          $ErrorActionPreference = "Stop"
-          $runtimeUrl = "https://web.archive.org/web/20220523140209/https://npcap.com/dist/npcap-0.96.exe"
-          $runtimeInstaller = "$env:TEMP\npcap-runtime.exe"
-          Write-Host "Downloading Npcap runtime from $runtimeUrl"
-          Invoke-WebRequest -Uri $runtimeUrl -OutFile $runtimeInstaller
-          Write-Host "Installing Npcap runtime silently"
-          Start-Process -FilePath $runtimeInstaller -ArgumentList "/S" -Wait
-          Start-Sleep -Seconds 5
-          Remove-Item $runtimeInstaller -Force
+          if (-not (Test-Path "C:\Program Files\Npcap")) {
+            Write-Host "Npcap not installed, installing from archive"
 
-          $sdkUrl = "https://web.archive.org/web/20220523140209/https://npcap.com/dist/npcap-sdk-0.1.zip"
-          $sdkZip = "$env:TEMP\npcap-sdk.zip"
-          $sdkRoot = "C:\npcap-sdk"
-          Write-Host "Downloading Npcap SDK from $sdkUrl"
-          Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkZip
-          if (Test-Path $sdkRoot) {
-            Remove-Item $sdkRoot -Recurse -Force
+            $ErrorActionPreference = "Stop"
+            $runtimeUrl = "https://web.archive.org/web/20220523140209/https://npcap.com/dist/npcap-0.96.exe"
+            $runtimeInstaller = "$env:TEMP\npcap-runtime.exe"
+            Write-Host "Downloading Npcap runtime from $runtimeUrl"
+            Invoke-WebRequest -Uri $runtimeUrl -OutFile $runtimeInstaller
+            Write-Host "Installing Npcap runtime silently"
+            Start-Process -FilePath $runtimeInstaller -ArgumentList "/S" -Wait
+            Start-Sleep -Seconds 5
+            Remove-Item $runtimeInstaller -Force
           }
-          New-Item -ItemType Directory -Path $sdkRoot | Out-Null
-          Expand-Archive -Path $sdkZip -DestinationPath $sdkRoot
-          Remove-Item $sdkZip -Force
-
-          $wpcapLib = Get-ChildItem -Path $sdkRoot -Filter "wpcap.lib" -Recurse | Select-Object -First 1
-          if (-not $wpcapLib) {
-            Throw "wpcap.lib not found in extracted SDK"
-          }
-          $libDir = Split-Path -Parent $wpcapLib.FullName
-          $sdkResolvedRoot = Split-Path -Parent $libDir
-          Write-Host "Resolved NPCAP_SDK_PATH to $sdkResolvedRoot"
-          Add-Content -Path $env:GITHUB_ENV -Value "NPCAP_SDK_PATH=$sdkResolvedRoot"
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
