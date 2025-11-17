@@ -1,6 +1,6 @@
 [package]
 name = "edamame_helper"
-version = "0.9.75"
+version = "0.9.77"
 edition = "2021"
 authors = ["EDAMAME Technologies"]
 description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
@@ -48,6 +48,10 @@ cargo-wix = "0.3.9"
 [build-dependencies]
 # protobuf->Rust compiler
 tonic-build = "0.14.2"
+
+# Local copy in order to allow rapid development/debug
+#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture" ] }
+flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture" ] }
 
 # Build metadata
 vergen-gitcl = { version = "1.0.8", features = [ "build", "cargo", "rustc", "si" ] }
