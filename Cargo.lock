@@ -1201,8 +1201,8 @@ dependencies = [
 
 [[package]]
 name = "edamame_foundation"
-version = "0.9.75"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#267072b6c7787288b7fd4541e9b0300b8024d9aa"
+version = "0.9.77"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#c9f7650b9713d736376d3ec9c4799261e352105a"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1265,7 +1265,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.9.75"
+version = "0.9.77"
 dependencies = [
  "base64 0.22.1",
  "cargo-wix",
@@ -1526,8 +1526,8 @@ dependencies = [
 
 [[package]]
 name = "flodbadd"
-version = "0.9.75"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#154c994cfeef223dabbbdeca7bae13946885e882"
+version = "0.9.77"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#6f8bb63d753681327edc0cfab0110174cfa52fbd"
 dependencies = [
  "anyhow",
  "arc-swap",
