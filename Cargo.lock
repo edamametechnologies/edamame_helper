@@ -880,9 +880,9 @@ dependencies = [
 
 [[package]]
 name = "crc"
-version = "3.3.0"
+version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9710d3b3739c2e349eb44fe848ad0b7c8cb1e42bd87ee49371df2f7acaf3e675"
+checksum = "5eb8a2a1cd12ab0d987a5d5e825195d372001a4094a0376319d5a0ad71c1ba0d"
 dependencies = [
  "crc-catalog",
 ]
@@ -1202,7 +1202,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.81"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#8cbd5e3a18f78aea464b6df8b4e0f4026b1318ee"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#4e91de92aa2fcd8893fd82e8f26843f12c661310"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -2830,9 +2830,9 @@ dependencies = [
 
 [[package]]
 name = "pcap"
-version = "2.3.0"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83cdabc34a80d9ec3563694cc31423fba6bb9bab4f31a9a5d5b85f29bd6d660a"
+checksum = "bbd2eecc2ddc671ec563b5b39f846556aade68a65d1afb14d8fe6b30b0457d75"
 dependencies = [
  "bitflags 1.3.2",
  "errno 0.2.8",
@@ -4549,9 +4549,9 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 
 [[package]]
 name = "tracing"
-version = "0.1.42"
+version = "0.1.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8eb41cbdb933e23b7929f47bb577710643157d7602ef3a2ebd3902b13ac5eda6"
+checksum = "784e0ac535deb450455cbfa28a6f0df145ea1bb7ae51b821cf5e7927fdcfbdd0"
 dependencies = [
  "pin-project-lite",
  "tracing-attributes",
@@ -4571,12 +4571,12 @@ dependencies = [
 
 [[package]]
 name = "tracing-appender"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3566e8ce28cc0a3fe42519fc80e6b4c943cc4c8cef275620eb8dac2d3d4e06cf"
+checksum = "786d480bce6247ab75f005b14ae1624ad978d3029d9113f0a22fa1ac773faeaf"
 dependencies = [
  "crossbeam-channel",
- "thiserror 1.0.69",
+ "thiserror 2.0.17",
  "time",
  "tracing-subscriber",
 ]
