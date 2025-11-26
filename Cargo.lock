@@ -1202,7 +1202,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "0.9.81"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#4e91de92aa2fcd8893fd82e8f26843f12c661310"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#782b28cecbf48b2a29356134b942aa62db0e56b5"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1247,6 +1247,7 @@ dependencies = [
  "sorted-vec",
  "strum",
  "strum_macros",
+ "tempfile",
  "thiserror 2.0.17",
  "tokio",
  "tonic 0.14.2",
