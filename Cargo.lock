@@ -1266,7 +1266,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "0.9.81"
+version = "0.9.82"
 dependencies = [
  "base64 0.22.1",
  "cargo-wix",
