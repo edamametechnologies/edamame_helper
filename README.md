@@ -61,7 +61,9 @@ msiexec /i edamame-helper-windows-VERSION.msi /qn
 
 ### Linux
 
-#### APT Repository (Debian/Ubuntu)
+#### APT Repository (Debian/Ubuntu/Raspbian)
+
+> **Raspberry Pi Users**: EDAMAME Helper functionality is built into edamame-posture, which supports all Raspberry Pi models.
 
 The EDAMAME Helper is built into the EDAMAME Posture package on Linux:
 
