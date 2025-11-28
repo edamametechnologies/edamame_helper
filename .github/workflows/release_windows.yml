@@ -147,6 +147,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Publish to Chocolatey
+      - name: Publish to Chocolatey
+        if: github.ref == 'refs/heads/main'
+        env:
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $VERSION="${{ steps.get_release.outputs.version }}"
+          
+          # Download the release asset to calculate SHA256
+          wget -q https://github.com/${{ github.repository }}/releases/download/v${VERSION}/edamame-helper-windows-${VERSION}.msi
+          $SHA_WIN = (Get-FileHash -Algorithm SHA256 edamame-helper-windows-${VERSION}.msi).Hash.ToLower()
+          
+          # Update Chocolatey Package
+          (Get-Content chocolatey/edamame-helper.nuspec) -replace '<version>.*</version>', "<version>${VERSION}</version>" | Set-Content chocolatey/edamame-helper.nuspec
+          (Get-Content chocolatey/tools/chocolateyInstall.ps1) -replace '\$url64 = ''.*''', "`$url64 = 'https://github.com/${{ github.repository }}/releases/download/v${VERSION}/edamame-helper-windows-${VERSION}.msi'" | Set-Content chocolatey/tools/chocolateyInstall.ps1
+          (Get-Content chocolatey/tools/chocolateyInstall.ps1) -replace '\$checksum64 = ''.*''', "`$checksum64 = '${SHA_WIN}'" | Set-Content chocolatey/tools/chocolateyInstall.ps1
+          
+          # Pack Chocolatey package
+          choco pack chocolatey/edamame-helper.nuspec
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          
+          # Publish to Chocolatey if API key is present
+          if ("${{ secrets.CHOCOLATEY_API_KEY }}" -ne "") {
+            choco push edamame-helper.${VERSION}.nupkg -s https://push.chocolatey.org/ -k ${{ secrets.CHOCOLATEY_API_KEY }}
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } else {
+            Write-Host "Skipping Chocolatey publish: CHOCOLATEY_API_KEY not set"
+          }
+
       - name: Dump EDAMAME Posture sessions
         uses: edamametechnologies/edamame_posture_action@v0
         with:
