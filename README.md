@@ -61,17 +61,48 @@ msiexec /i edamame-helper-windows-VERSION.msi /qn
 
 ### Linux
 
-The EDAMAME Helper is built into the EDAMAME Security package on Linux. Install via APT:
+#### APT Repository (Debian/Ubuntu)
+
+The EDAMAME Helper is built into the EDAMAME Posture package on Linux:
 
 ```bash
 # Add the EDAMAME repository (if not already added)
 wget -O - https://edamame.s3.eu-west-1.amazonaws.com/repo/public.key | sudo gpg --dearmor -o /usr/share/keyrings/edamame.gpg
 echo "deb [arch=amd64 signed-by=/usr/share/keyrings/edamame.gpg] https://edamame.s3.eu-west-1.amazonaws.com/repo stable main" | sudo tee /etc/apt/sources.list.d/edamame.list
 
-# Install EDAMAME Security (includes helper)
+# Update package list
 sudo apt update
+
+# Install EDAMAME Posture (CLI tool with built-in helper)
+sudo apt install edamame-posture
+
+# OR install EDAMAME Security (GUI app - uses edamame-posture which has built-in helper)
 sudo apt install edamame-security
 ```
+
+**Package Architecture on Linux**:
+- `edamame-posture`: CLI tool with **built-in helper functionality**
+- `edamame-security`: GUI app that **depends on and uses** `edamame-posture`
+- No separate helper package needed - helper is integrated into `edamame-posture`
+
+#### APK Repository (Alpine)
+
+The EDAMAME Helper is also built into the EDAMAME Posture package on Alpine:
+
+```bash
+# Import the public key
+wget -O /tmp/edamame.rsa.pub https://edamame.s3.eu-west-1.amazonaws.com/repo/alpine/v3.15/x86_64/edamame.rsa.pub
+sudo cp /tmp/edamame.rsa.pub /etc/apk/keys/
+
+# Add the repository
+echo "https://edamame.s3.eu-west-1.amazonaws.com/repo/alpine/v3.15/main" | sudo tee -a /etc/apk/repositories
+
+# Install EDAMAME Posture (includes built-in helper)
+sudo apk update
+sudo apk add edamame-posture
+```
+
+**Note**: On Alpine, `edamame-posture` includes the built-in helper functionality. The GUI app (`edamame-security`) is not available as an APK package.
 
 ## Overview
 
