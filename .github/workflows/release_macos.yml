@@ -173,6 +173,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Publish to Homebrew Tap
+      - name: Publish to Homebrew Tap
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.DEV_GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -e
+          VERSION=${{ steps.get_release.outputs.version }}
+          
+          # Download the release asset to calculate SHA256
+          wget -q https://github.com/${{ github.repository }}/releases/download/v${VERSION}/edamame-helper-macos-${VERSION}.pkg
+          SHA_MACOS=$(sha256sum edamame-helper-macos-${VERSION}.pkg | awk '{print $1}')
+          
+          # Update Homebrew Cask
+          sed -i '' "s|url \".*\"|url \"https://github.com/${{ github.repository }}/releases/download/v#{version}/edamame-helper-macos-#{version}.pkg\"|g" macos/edamame-helper.rb
+          sed -i '' "s|sha256 \".*\"|sha256 \"${SHA_MACOS}\"|g" macos/edamame-helper.rb
+          sed -i '' "s|version \".*\"|version \"${VERSION}\"|g" macos/edamame-helper.rb
+          
+          # Only run if token is present
+          if [ -n "${{ secrets.DEV_GITHUB_TOKEN }}" ]; then
+            # Disable credential helper to avoid keychain errors
+            export GIT_TERMINAL_PROMPT=0
+            git config --global credential.helper ""
+            
+            git clone https://oauth2:${{ secrets.DEV_GITHUB_TOKEN }}@github.com/edamametechnologies/homebrew-tap.git tap
+            mkdir -p tap/Casks
+            cp macos/edamame-helper.rb tap/Casks/edamame-helper.rb
+            cd tap
+            git config user.name "EDAMAME Bot"
+            git config user.email "bot@edamame.tech"
+            git add .
+            # Check if there are changes (or if it's a new repo)
+            if [ -z "$(git rev-parse HEAD 2>/dev/null)" ] || ! git diff-index --quiet HEAD 2>/dev/null; then
+              git commit -m "Update edamame-helper to ${VERSION}"
+              git push origin main
+            else
+              echo "No changes to commit"
+            fi
+          else
+            echo "Skipping Homebrew publish: DEV_GITHUB_TOKEN not set"
+          fi
+
       - name: Dump EDAMAME Posture sessions
         uses: edamametechnologies/edamame_posture_action@v0
         with:

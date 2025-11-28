@@ -4,6 +4,75 @@ It's used to execute security checks, remediation and rollback actions that requ
 All the actions performed through the Helper strictly follow the threat models defined in the threat model repo (https://github.com/edamametechnologies/threatmodels).
 The Helper relies on edamame_foundation, an open source library that contains the foundation for EDAMAME threat management (https://github.com/edamametechnologies/edamame_foundation).
 
+## Installation
+
+### macOS
+
+#### Homebrew Installation (Recommended)
+```bash
+# Add the EDAMAME tap
+brew tap edamametechnologies/tap
+
+# Install EDAMAME Helper
+brew install --cask edamame-helper
+
+# Verify installation
+/Library/Application\ Support/EDAMAME/EDAMAME-Helper/edamame_helper --version
+```
+
+To update to the latest version:
+```bash
+brew upgrade --cask edamame-helper
+```
+
+#### Manual PKG Installation
+Download the macOS installer from the [releases page](https://github.com/edamametechnologies/edamame_helper/releases):
+- **Universal (Intel + Apple Silicon)**: `edamame-helper-macos-VERSION.pkg`
+
+Double-click the PKG file to install, or use:
+```bash
+sudo installer -pkg edamame-helper-macos-VERSION.pkg -target /
+```
+
+### Windows
+
+#### Chocolatey Installation (Recommended)
+```powershell
+# Install EDAMAME Helper
+choco install edamame-helper
+
+# Verify installation
+edamame_helper --version
+```
+
+To update to the latest version:
+```powershell
+choco upgrade edamame-helper
+```
+
+#### Manual MSI Installation
+Download the Windows installer from the [releases page](https://github.com/edamametechnologies/edamame_helper/releases):
+- **x86_64**: `edamame-helper-windows-VERSION.msi`
+
+Double-click the MSI file to install, or use:
+```powershell
+msiexec /i edamame-helper-windows-VERSION.msi /qn
+```
+
+### Linux
+
+The EDAMAME Helper is built into the EDAMAME Security package on Linux. Install via APT:
+
+```bash
+# Add the EDAMAME repository (if not already added)
+wget -O - https://edamame.s3.eu-west-1.amazonaws.com/repo/public.key | sudo gpg --dearmor -o /usr/share/keyrings/edamame.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/edamame.gpg] https://edamame.s3.eu-west-1.amazonaws.com/repo stable main" | sudo tee /etc/apt/sources.list.d/edamame.list
+
+# Install EDAMAME Security (includes helper)
+sudo apt update
+sudo apt install edamame-security
+```
+
 ## Overview
 
 The edamame_helper is designed with privilege separation in mind, allowing the main EDAMAME Security application to perform operations that require elevated permissions while maintaining security. This helper runs with administrative privileges and communicates with the main application through a secure channel.
