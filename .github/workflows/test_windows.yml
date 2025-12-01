@@ -12,7 +12,7 @@ on:
       - "snap/**"
       - .github/workflows/**_macos.yml
       - .github/workflows/**_linux.yml
-      - .github/workflows/test_installers.yml
+      - .github/workflows/*.yml
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
