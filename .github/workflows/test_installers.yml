@@ -2,8 +2,8 @@ name: Test Helper Installers
 
 on:
   schedule:
-    # Run every 2 hours
-    - cron: '0 */2 * * *'
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 # Auto cancel previous runs if they were not completed.
