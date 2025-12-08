@@ -51,7 +51,7 @@ tonic-build = "0.14.2"
 # Build metadata
 vergen-gitcl = { version = "1.0.8", features = [ "build", "cargo", "rustc", "si" ] }
 
-[target.'cfg(target_os = "windows")'.dependencies]
+[target.'cfg(target_os = "windows")'.build-dependencies]
 # For the winpcap installation support in Windows
 # Local copy in order to allow rapid development/debug
 #flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture" ] }
