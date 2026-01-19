@@ -1,6 +1,4 @@
-use vergen_gitcl::{
-    BuildBuilder, CargoBuilder, Emitter, GitclBuilder, RustcBuilder, SysinfoBuilder,
-};
+use vergen_gitcl::{Build, Cargo, Emitter, Gitcl, Rustc, Sysinfo};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Windows-specific linking/runtime assistance
@@ -8,11 +6,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     flodbadd::windows_npcap::configure_build_linking_from_metadata();
 
     // Emit the instructions with idempotent() for cross-compilation support
-    let build = BuildBuilder::all_build()?;
-    let cargo = CargoBuilder::all_cargo()?;
-    let gitcl = GitclBuilder::all_git()?;
-    let rustc = RustcBuilder::all_rustc()?;
-    let si = SysinfoBuilder::all_sysinfo()?;
+    let build = Build::all_build();
+    let cargo = Cargo::all_cargo();
+    let gitcl = Gitcl::all_git();
+    let rustc = Rustc::all_rustc();
+    let si = Sysinfo::all_sysinfo();
 
     Emitter::default()
         .idempotent()
