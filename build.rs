@@ -1,4 +1,6 @@
-use vergen_gitcl::{BuildBuilder, CargoBuilder, Emitter, GitclBuilder, RustcBuilder, SysinfoBuilder};
+use vergen_gitcl::{
+    BuildBuilder, CargoBuilder, Emitter, GitclBuilder, RustcBuilder, SysinfoBuilder,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Windows-specific linking/runtime assistance
