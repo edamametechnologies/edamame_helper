@@ -1,6 +1,6 @@
 $packageName = 'edamame-helper'
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$url64 = 'https://github.com/edamametechnologies/edamame_helper/releases/download/v0.3.4/edamame-helper-windows-0.3.4.msi'
+$url64 = 'https://github.com/edamametechnologies/edamame_helper/releases/download/v1.0.0/edamame-helper-windows-1.0.0.msi'
 $checksum64 = '0000000000000000000000000000000000000000000000000000000000000000'
 
 Install-ChocolateyPackage -PackageName $packageName `
