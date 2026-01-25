@@ -1,21 +1,25 @@
-# CLAUDE.md
+---
+description: "EDAMAME Helper - Privileged daemon for security operations"
+alwaysApply: true
+---
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# EDAMAME Helper - Privileged Daemon
+
+> **Master Repository:** `edamame_app` - See `../edamame_app/.cursor/rules/workspace.mdc` for workspace-wide rules.
 
 ## Project Overview
 
-EDAMAME Helper is a privileged daemon/service that extends the EDAMAME Security application with elevated capabilities. It executes security checks requiring admin/root access, performs remediation actions, and communicates with the main app via gRPC.
+EDAMAME Helper is a privileged daemon/service that extends EDAMAME Security with elevated capabilities. It executes security checks requiring admin/root access, performs remediation actions, and communicates with the main app via gRPC.
 
-Part of the EDAMAME ecosystem - see `../edamame_core/CLAUDE.md` for full ecosystem documentation.
+## Source Files
+- `src/main.rs` - Entry point with platform-specific configurations
+- `src/server.rs` - gRPC server and mDNS discovery initialization
+- `src/windows.rs` - Windows Service integration
 
 ## Build Commands
-
 ```bash
-# Debug build
-cargo build
-
-# Release build
-cargo build --release
+cargo build                    # Debug build
+cargo build --release          # Release build
 
 # macOS universal binary + package
 cargo build --release --target x86_64-apple-darwin
@@ -31,38 +35,22 @@ sudo ./target/release/edamame_helper
 ```
 
 ## Testing
-
 ```bash
 make test  # Runs cargo test
 ```
 
-CI runs on macOS and Windows with code signing and installer validation.
-
-## Architecture
-
-### Source Files
-- `main.rs` - Entry point with platform-specific configurations
-- `server.rs` - gRPC server and mDNS discovery initialization
-- `windows.rs` - Windows Service integration
-
-### Platform Behavior
+## Platform Behavior
 - **Windows (Release)**: Runs as Windows Service via `windows_service` crate
 - **Windows (Debug)**: Direct executable mode
 - **macOS/Linux**: Standard daemon via `start_server()`
 
-### Key Components
-- gRPC server for IPC with main application
-- mDNS discovery for network services
-- TLS certificate configuration from environment variables
-
-### macOS Installation
+## macOS Installation
 Installed as LaunchDaemon:
 - Label: `com.edamametechnologies.edamame-helper`
 - Location: `/Library/Application Support/EDAMAME/EDAMAME-Helper/edamame_helper`
 - Logs: `/var/log/edamame_helper.log`
 
 ## Dependencies
-
 - `edamame_foundation` - Core security functionality
 - `flodbadd` - Packet capture utilities
 - `tonic` + `prost` - gRPC
@@ -70,11 +58,13 @@ Installed as LaunchDaemon:
 - `windows-service` - Windows Service integration
 
 ## Environment Variables
-
 - `EDAMAME_HELPER_SENTRY` - Error tracking
 - `EDAMAME_SERVER`, `EDAMAME_SERVER_PEM`, `EDAMAME_SERVER_KEY` - TLS config
 - `EDAMAME_CLIENT_CA_PEM` - Client certificate authority
 
 ## Local Development
-
-Use `../edamame_app/flip.sh local` to switch to local path dependencies.
+Toggle local/git dependencies (run from edamame_app):
+```bash
+cd ../edamame_app && ./flip.sh local
+cd ../edamame_app && ./flip.sh git
+```
