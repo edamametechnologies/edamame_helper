@@ -120,9 +120,9 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "arc-swap"
-version = "1.8.1"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ded5f9a03ac8f24d1b8a25101ee812cd32cdc8c50a4c50237de2c4915850e73"
+checksum = "51d03449bb8ca2cc2ef70869af31463d1ae5ccc8fa3e334b307203fbf815207e"
 dependencies = [
  "rustversion",
 ]
@@ -1250,8 +1250,8 @@ dependencies = [
 
 [[package]]
 name = "edamame_foundation"
-version = "1.0.2"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#dd5210725bef5a2dee913b8c8dc20a4ecf4b0f62"
+version = "1.0.1"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#a039c10854b23b76ec159a5c25a7a1993d408fc5"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1316,7 +1316,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "base64 0.22.1",
  "cargo-wix",
@@ -1338,7 +1338,7 @@ dependencies = [
 [[package]]
 name = "edamame_models"
 version = "0.1.1"
-source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#bdbdce547464e624b768a693686291110b2a14ec"
+source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#ce081528375790919de6fae0f098edace96f1990"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1578,8 +1578,8 @@ dependencies = [
 
 [[package]]
 name = "flodbadd"
-version = "1.0.2"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#71198eeb1f48ab89605f9617a186ed89e777e7c8"
+version = "1.0.1"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#f813569b702f16d9be754b3b970cde359c64db9d"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -2085,13 +2085,14 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.20"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96547c2556ec9d12fb1578c4eaf448b04993e7fb79cbaad930a656880a6bdfa0"
+checksum = "727805d60e7938b76b826a6ef209eb70eaa1812794f9424d4a4e2d740662df5f"
 dependencies = [
  "base64 0.22.1",
  "bytes",
  "futures-channel",
+ "futures-core",
  "futures-util",
  "http",
  "http-body",
@@ -3160,9 +3161,9 @@ dependencies = [
 
 [[package]]
 name = "portable-atomic"
-version = "1.13.1"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
+checksum = "f89776e4d69bb58bc6993e99ffa1d11f228b839984854c7daeb5d37f87cbe950"
 
 [[package]]
 name = "potential_utf"
@@ -3808,9 +3809,9 @@ dependencies = [
 
 [[package]]
 name = "schemars"
-version = "1.2.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2b42f36aa1cd011945615b92222f6bf73c599a102a300334cd7f8dbeec726cc"
+checksum = "54e910108742c57a770f492731f99be216a52fadd361b06c8fb59d74ccc267d2"
 dependencies = [
  "dyn-clone",
  "ref-cast",
@@ -3963,7 +3964,7 @@ dependencies = [
  "indexmap 1.9.3",
  "indexmap 2.13.0",
  "schemars 0.9.0",
- "schemars 1.2.1",
+ "schemars 1.2.0",
  "serde_core",
  "serde_json",
  "serde_with_macros",
@@ -4739,8 +4740,8 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "undeadlock"
-version = "1.0.2"
-source = "git+https://github.com/edamametechnologies/undeadlock?branch=main#1613b578c25cee18c5c591a17e1c3ca73f1ed908"
+version = "1.0.0"
+source = "git+https://github.com/edamametechnologies/undeadlock?branch=main#9a20498e314219ac2ec98f68f5bc5424257584cb"
 dependencies = [
  "dashmap",
  "futures",
@@ -5759,9 +5760,9 @@ checksum = "40990edd51aae2c2b6907af74ffb635029d5788228222c4bb811e9351c0caad3"
 
 [[package]]
 name = "zmij"
-version = "1.0.19"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ff05f8caa9038894637571ae6b9e29466c1f4f829d26c9b28f869a29cbe3445"
+checksum = "1966f8ac2c1f76987d69a74d0e0f929241c10e78136434e3be70ff7f58f64214"
 
 [[package]]
 name = "zopfli"
