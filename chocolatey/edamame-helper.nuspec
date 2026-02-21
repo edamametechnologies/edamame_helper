@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>edamame-helper</id>
-    <version>1.0.5</version>
+    <version>1.0.8</version>
     <title>EDAMAME Helper</title>
     <authors>EDAMAME Technologies</authors>
     <projectUrl>https://github.com/edamametechnologies/edamame_helper</projectUrl>
