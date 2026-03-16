@@ -1550,7 +1550,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "1.1.0"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#878a6562d3963327d9944e90342f0e1781db39d8"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#54ed5a7a72a5d3e50a0928770ef8aee6c135eaef"
 dependencies = [
  "anyhow",
  "arc-swap",
