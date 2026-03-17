@@ -174,8 +174,23 @@ jobs:
             --repo "${{ github.repository }}" \
             --clobber
 
-          gh release view "$TAG" --repo "${{ github.repository }}" --json assets --jq '.assets[].name' \
-            | rg "^edamame-helper-windows-${VERSION}\\.msi$"
+          EXPECTED_ASSET="edamame-helper-windows-${VERSION}.msi"
+          ASSET_NAMES="$(gh release view "$TAG" --repo "${{ github.repository }}" --json assets --jq '.assets[].name')"
+
+          echo "$ASSET_NAMES"
+
+          FOUND=false
+          while IFS= read -r name; do
+            if [[ "$name" == "$EXPECTED_ASSET" ]]; then
+              FOUND=true
+              break
+            fi
+          done <<< "$ASSET_NAMES"
+
+          if [[ "$FOUND" != true ]]; then
+            echo "ERROR: release asset verification failed: $EXPECTED_ASSET"
+            exit 1
+          fi
 
       # Publish to Chocolatey (skip if version already exists to prevent checksum desync)
       - name: Publish to Chocolatey
