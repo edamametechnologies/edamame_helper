@@ -6,12 +6,10 @@ on:
     branches:
       - 'dev'
       - 'main'
-    paths-ignore:
-      - 'windows/**'
-      - 'linux/**'
-      - .github/workflows/**_windows.yml
-      - .github/workflows/**_linux.yml
-      - .github/workflows/*.yml
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
