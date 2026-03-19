@@ -1235,8 +1235,8 @@ dependencies = [
 
 [[package]]
 name = "edamame_foundation"
-version = "1.1.1"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#d35ba4fbd69df51bf708b88cc3b08ab4259fec66"
+version = "1.1.2"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#7dc494c815af85560ab4a59aa0d7a191f45993ce"
 dependencies = [
  "anyhow",
  "arp-toolkit",
@@ -1549,8 +1549,8 @@ dependencies = [
 
 [[package]]
 name = "flodbadd"
-version = "1.1.1"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#52fd72639e72f1f191e7cd20a61c08702900c574"
+version = "1.1.2"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#9fbf048426929e17ebf09d8cbb07693506a6f8f8"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -5790,18 +5790,18 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.8.42"
+version = "0.8.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2578b716f8a7a858b7f02d5bd870c14bf4ddbbcf3a4c05414ba6503640505e3"
+checksum = "5c5030500cb2d66bdfbb4ebc9563be6ce7005a4b5d0f26be0c523870fe372ca6"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.42"
+version = "0.8.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e6cc098ea4d3bd6246687de65af3f920c430e236bee1e3bf2e441463f08a02f"
+checksum = "a5f86989a046a79640b9d8867c823349a139367bda96549794fcc3313ce91f4e"
 dependencies = [
  "proc-macro2",
  "quote",
