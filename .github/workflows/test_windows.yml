@@ -6,13 +6,10 @@ on:
     branches:
       - "dev"
       - "main"
-    paths-ignore:
-      - "macos/**"
-      - "linux/**"
-      - "snap/**"
-      - .github/workflows/**_macos.yml
-      - .github/workflows/**_linux.yml
-      - .github/workflows/*.yml
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
