@@ -184,25 +184,19 @@ jobs:
         if: matrix.platform == 'windows'
         id: verify_windows
         run: |
-          Write-Host "ℹ️ Verifying Windows helper installation"
-          # Skip verification as it's taking too long
-          echo "Skipping verification as it's taking too long"
-          exit 0
-          
-          try {
-            # Check for MSI installation
-            $msiFound = $false
-            $products = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*EDAMAME*Helper*" }
-            if ($products) {
-              $products | Select-Object Name, Version
-              $msiFound = $true
-              Write-Host "Helper package found in installed products"
+          Write-Host "Verifying Windows helper installation"
+          $helperPath = "C:\Program Files\EDAMAME\EDAMAME-Helper\edamame_helper.exe"
+          if (Test-Path $helperPath) {
+            $fileInfo = Get-Item $helperPath
+            Write-Host "Helper binary found: $helperPath ($($fileInfo.Length) bytes)"
+          } else {
+            Write-Host "Helper binary not at expected path, checking services..."
+            $svc = Get-Service -Name "*edamame*" -ErrorAction SilentlyContinue
+            if ($svc) {
+              Write-Host "Service found: $($svc.Name) - Status: $($svc.Status)"
             } else {
-              Write-Host "Helper package not found in installed products"
+              Write-Host "WARNING: No helper service or binary found"
             }
-          } catch {
-            Write-Host "Error in verification: $_"
-            exit 1
           }
         continue-on-error: true
         shell: pwsh
