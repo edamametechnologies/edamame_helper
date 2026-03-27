@@ -126,10 +126,11 @@ jobs:
           # Test if the helper is running
           echo "Waiting for the helper to start"
           sleep 20
-          if [ -f /var/log/edamame_helper.log ]; then
-            cat /var/log/edamame_helper.log
+          HELPER_LOG_DIR="/Library/Application Support/EDAMAME/EDAMAME-Helper"
+          if ls "$HELPER_LOG_DIR"/edamame_helper_* 1>/dev/null 2>&1; then
+            cat "$HELPER_LOG_DIR"/edamame_helper_*
           else
-            echo "Helper log file not found"
+            echo "Helper log files not found in $HELPER_LOG_DIR"
             exit 1
           fi
         continue-on-error: true
