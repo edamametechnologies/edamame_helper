@@ -15,8 +15,8 @@ cp ./macos/com.edamametechnologies.edamame-helper.plist "$TARGET/ROOT/Library/La
 mkdir -p "$TARGET/ROOT/$ROOT"
 cp ./target/release/edamame_helper "$TARGET/ROOT/$ROOT"
 
-# Sign + hardened runtime
-codesign --timestamp --options=runtime -s "Developer ID Application: Edamame Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
+# Sign + hardened runtime + Endpoint Security entitlement
+codesign --timestamp --options=runtime --entitlements ./macos/edamame_helper.entitlements -s "Developer ID Application: Edamame Technologies (WSL782B48J)" -v "$TARGET/ROOT/$ROOT"/edamame_helper
 
 # Include the most recent uninstall script
 cp ./macos/uninstall.sh "$TARGET/ROOT/$ROOT"
