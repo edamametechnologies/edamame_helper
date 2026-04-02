@@ -1,5 +1,20 @@
 #!/bin/bash
+# Register and start the EDAMAME helper LaunchDaemon.
+# Do not use set -e: first install has nothing to boot out; launchctl APIs differ by macOS version.
 
-/bin/launchctl load "/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
+PLIST="/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
+LABEL="system/com.edamametechnologies.edamame-helper"
+
+# Upgrade path: remove any prior registration (ignore if none).
+/bin/launchctl bootout system "$PLIST" 2>/dev/null || true
+/bin/launchctl unload "$PLIST" 2>/dev/null || true
+
+# Prefer bootstrap + kickstart (current macOS); fall back to load for older systems.
+if /bin/launchctl bootstrap system "$PLIST" 2>/dev/null; then
+  /bin/launchctl enable "$LABEL" 2>/dev/null || true
+  /bin/launchctl kickstart -k "$LABEL" 2>/dev/null || true
+else
+  /bin/launchctl load -w "$PLIST" 2>/dev/null || /bin/launchctl load "$PLIST" 2>/dev/null || true
+fi
 
 exit 0

@@ -125,12 +125,19 @@ jobs:
           sudo installer -verboseR -pkg ./target/pkg/edamame-helper.pkg -target /
           # Test if the helper is running
           echo "Waiting for the helper to start"
+          # Ensure the daemon runs the binary we just installed (rolling logs live next to the exe).
+          sudo launchctl kickstart -k system/com.edamametechnologies.edamame-helper 2>/dev/null || true
           sleep 20
           HELPER_LOG_DIR="/Library/Application Support/EDAMAME/EDAMAME-Helper"
-          if ls "$HELPER_LOG_DIR"/edamame_helper_* 1>/dev/null 2>&1; then
-            cat "$HELPER_LOG_DIR"/edamame_helper_*
+          shopt -s nullglob
+          helper_logs=("$HELPER_LOG_DIR"/edamame_helper*)
+          if ((${#helper_logs[@]} > 0)); then
+            cat "${helper_logs[@]}"
           else
-            echo "Helper log files not found in $HELPER_LOG_DIR"
+            echo "Helper log files not found in $HELPER_LOG_DIR (expected rolling files edamame_helper_<pid>.<date> per foundation logger)."
+            ls -la "$HELPER_LOG_DIR" 2>&1 || true
+            sudo launchctl print system/com.edamametechnologies.edamame-helper 2>&1 || true
+            pgrep -lf edamame_helper 2>&1 || true
             exit 1
           fi
         continue-on-error: true
