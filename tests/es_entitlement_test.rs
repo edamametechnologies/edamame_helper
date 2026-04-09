@@ -71,9 +71,7 @@ fn es_client_initializes() {
 #[test]
 fn es_receives_process_events() {
     if !is_root() {
-        eprintln!(
-            "SKIP: es_receives_process_events requires root (run via `make macos_es_test`)"
-        );
+        eprintln!("SKIP: es_receives_process_events requires root (run via `make macos_es_test`)");
         return;
     }
 
