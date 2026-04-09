@@ -1,4 +1,4 @@
-.PHONY: upgrade unused_dependencies format clean test
+.PHONY: upgrade unused_dependencies format clean test macos_es_test
 
 # Import and export env for edamame_core and edamame_foundation
 -include ../secrets/lambda-signature.env
@@ -33,8 +33,25 @@ macos_debug_console:
 	RUSTFLAGS="--cfg tokio_unstable" cargo build
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./target/debug/edamame_helper"
 
+PROV_PROFILE = $(shell ./macos/find-provisioning-profile.sh com.edamametechnologies.edamame-helper 2>/dev/null)
+
+macos_es_test:
+	cargo test --test es_entitlement_test --no-run 2>&1
+	$(eval ES_BIN := $(shell find target/debug/deps -name 'es_entitlement_test-*' -perm +111 ! -name '*.d' ! -name '*.o' | head -1))
+	@echo "Test binary: $(ES_BIN)"
+	codesign --force --timestamp --options=runtime \
+		--entitlements ./macos/edamame_helper.entitlements \
+		-i com.edamametechnologies.edamame-helper \
+		--sign "Developer ID Application: Edamame Technologies (WSL782B48J)" "$(ES_BIN)"
+	sudo "$(ES_BIN)" --nocapture --test-threads=1
+
 macos_debug:
 	cargo build
+	codesign --force \
+		--entitlements ./macos/edamame_helper_debug.entitlements \
+		-i com.edamametechnologies.edamame-helper \
+		-s "Developer ID Application: Edamame Technologies (WSL782B48J)" \
+		./target/debug/edamame_helper
 	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,edamame_foundation::runner_cli=debug; rust-lldb ./target/debug/edamame_helper"
 
 
