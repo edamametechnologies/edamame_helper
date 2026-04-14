@@ -1,4 +1,4 @@
-.PHONY: upgrade unused_dependencies format clean test macos_es_test
+.PHONY: upgrade unused_dependencies format clean test macos_es_test install_provisioning
 
 # Import and export env for edamame_core and edamame_foundation
 -include ../secrets/lambda-signature.env
@@ -12,7 +12,15 @@ delcachedignore:
 
 -include ../secrets/aws-writer.env
 -include ../secrets/apple-sign.env
+-include ../secrets/apple-provisioning.env
 export
+
+install_provisioning:
+	@test -n "$(APPLE_ES_HELPER_PROVISIONING_PROFILE)" || (echo "Missing APPLE_ES_HELPER_PROVISIONING_PROFILE -- source ../secrets/apple-provisioning.env" && exit 1)
+	mkdir -p "$(HOME)/Library/MobileDevice/Provisioning Profiles"
+	echo "$(APPLE_ES_HELPER_PROVISIONING_PROFILE)" | base64 --decode > "$(HOME)/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
+	@echo "Provisioning profile installed."
+
 macos_package:
 	cargo build --release --target x86_64-apple-darwin
 	cargo build --release --target aarch64-apple-darwin
