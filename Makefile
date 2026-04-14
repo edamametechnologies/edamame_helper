@@ -19,7 +19,9 @@ install_provisioning:
 	@test -n "$(APPLE_ES_HELPER_PROVISIONING_PROFILE)" || (echo "Missing APPLE_ES_HELPER_PROVISIONING_PROFILE -- source ../secrets/apple-provisioning.env" && exit 1)
 	mkdir -p "$(HOME)/Library/MobileDevice/Provisioning Profiles"
 	echo "$(APPLE_ES_HELPER_PROVISIONING_PROFILE)" | base64 --decode > "$(HOME)/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
-	@echo "Provisioning profile installed."
+	sudo mkdir -p "/Library/MobileDevice/Provisioning Profiles"
+	sudo cp "$(HOME)/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile" "/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
+	@echo "Provisioning profile installed (user + system-wide)."
 
 macos_package:
 	cargo build --release --target x86_64-apple-darwin
@@ -28,7 +30,7 @@ macos_package:
 	lipo -create -output target/release/edamame_helper \
     target/x86_64-apple-darwin/release/edamame_helper \
     target/aarch64-apple-darwin/release/edamame_helper
-	./macos/make-pkg.sh 
+	./macos/make-pkg.sh --provisioning-profile "$(HOME)/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
 
 macos_publish: macos_package
 	./macos/make-distribution-pkg.sh && ./macos/notarization.sh ./target/pkg/edamame-helper.pkg && ./macos/publish.sh
