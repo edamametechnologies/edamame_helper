@@ -90,13 +90,10 @@ jobs:
           echo ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY }} | base64 --decode > appstore_connect_api_key.p8
           xcrun notarytool store-credentials -k appstore_connect_api_key.p8 -d ${{ secrets.APPLE_APPSTORE_CONNECT_API_KEY_ID }} -i ${{ secrets.APPLE_APPSTORE_CONNECT_API_ISSUER_ID }} Edamame
 
-      - name: Install ES provisioning profile
+      - name: Decode ES provisioning profile
         shell: bash
         run: |
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          echo "${{ secrets.APPLE_ES_HELPER_PROVISIONING_PROFILE }}" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
-          sudo mkdir -p "/Library/MobileDevice/Provisioning Profiles"
-          sudo cp "$HOME/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile" "/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
+          echo "${{ secrets.APPLE_ES_HELPER_PROVISIONING_PROFILE }}" | base64 --decode > /tmp/EDAMAME_Helper.provisionprofile
 
       - name: Build helper and its standalone installer
         shell: bash
@@ -114,7 +111,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          ./macos/make-pkg.sh && ./macos/make-distribution-pkg.sh
+          ./macos/make-pkg.sh --provisioning-profile /tmp/EDAMAME_Helper.provisionprofile && ./macos/make-distribution-pkg.sh
           # Final naming with version
           cp ./target/pkg/edamame-helper.pkg ./target/pkg/edamame-helper-macos-${VERSION}.pkg
 
