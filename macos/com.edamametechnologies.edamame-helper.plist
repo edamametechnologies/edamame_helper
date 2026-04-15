@@ -10,7 +10,7 @@
     <true/>
     <key>ProgramArguments</key>
     <array>
-        <string>/Library/Application Support/EDAMAME/EDAMAME-Helper/edamame_helper.app/Contents/MacOS/edamame_helper</string>
+        <string>/Library/Application Support/EDAMAME/EDAMAME-Helper/edamame_helper</string>
     </array>
 </dict>
 </plist>
