@@ -8,7 +8,7 @@ on:
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -33,6 +33,9 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Download installer from GitHub releases
         id: download
         continue-on-error: true
@@ -170,13 +173,7 @@ jobs:
         if: matrix.platform == 'macos'
         id: verify_macos
         run: |
-          # Verify macOS helper installation
-          echo "ℹ️ Verifying macOS helper installation"
-          if ! ls -la /Library/LaunchDaemons | grep "com.edamametechnologies.edamame-helper.plist"; then
-            echo "❌ Helper service not found in LaunchDaemons"
-            exit 1
-          fi          
-          echo "✅ macOS helper verification successful"
+          bash ./macos/verify-installed-helper.sh --structure-only
         continue-on-error: true
         shell: bash
 
@@ -205,18 +202,7 @@ jobs:
         if: matrix.platform == 'macos'
         id: run_macos
         run: |
-          echo "ℹ️ Checking macOS helper functionality"
-
-          # Wait for 90 seconds to ensure the helper is running
-          sleep 90
-          
-          # Check helper process is running
-          if ps aux | grep "[e]damame_helper"; then
-            echo "✅ Helper process is running"
-          else
-            echo "❌ Helper process not running"
-            exit 1
-          fi
+          bash ./macos/verify-installed-helper.sh --launch-only
         continue-on-error: true
         shell: bash
 
