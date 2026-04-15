@@ -8,12 +8,14 @@ on:
       - 'main'
     paths:
       - 'src/**'
+      - 'macos/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/workflows/test_macos.yml'
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 # Write permissions are required to upload the release asset.
@@ -125,26 +127,9 @@ jobs:
         shell: bash
         run: |
           make test
-          # Test the installer
           echo "Testing the installer"
           sudo installer -verboseR -pkg ./target/pkg/edamame-helper.pkg -target /
-          # Test if the helper is running
-          echo "Waiting for the helper to start"
-          # Ensure the daemon runs the binary we just installed (rolling logs live next to the exe).
-          sudo launchctl kickstart -k system/com.edamametechnologies.edamame-helper 2>/dev/null || true
-          sleep 20
-          HELPER_LOG_DIR="/Library/Application Support/EDAMAME/EDAMAME-Helper"
-          shopt -s nullglob
-          helper_logs=("$HELPER_LOG_DIR"/edamame_helper*)
-          if ((${#helper_logs[@]} > 0)); then
-            cat "${helper_logs[@]}"
-          else
-            echo "Helper log files not found in $HELPER_LOG_DIR (expected rolling files edamame_helper_<pid>.<date> per foundation logger)."
-            ls -la "$HELPER_LOG_DIR" 2>&1 || true
-            sudo launchctl print system/com.edamametechnologies.edamame-helper 2>&1 || true
-            pgrep -lf edamame_helper 2>&1 || true
-            exit 1
-          fi
+          bash ./macos/verify-installed-helper.sh
         continue-on-error: true
 
       - name: Slack alerts

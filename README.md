@@ -18,7 +18,7 @@ brew tap edamametechnologies/tap
 brew install --cask edamame-helper
 
 # Verify installation
-/Library/Application\ Support/EDAMAME/EDAMAME-Helper/edamame_helper --version
+/Library/Application\ Support/EDAMAME/EDAMAME-Helper/edamame_helper.app/Contents/MacOS/edamame_helper --version
 ```
 
 To update to the latest version:
@@ -34,6 +34,12 @@ Double-click the PKG file to install, or use:
 ```bash
 sudo installer -pkg edamame-helper-macos-VERSION.pkg -target /
 ```
+
+The macOS package installs the helper as an app-like bundle at
+`/Library/Application Support/EDAMAME/EDAMAME-Helper/edamame_helper.app`,
+embeds the Endpoint Security provisioning profile at
+`Contents/embedded.provisionprofile`, and registers the LaunchDaemon to execute
+the bundled binary.
 
 ### Windows
 
