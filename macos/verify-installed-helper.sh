@@ -109,8 +109,11 @@ verify_structure() {
     fail "LaunchDaemon plist does not point to the bundled helper executable"
   fi
 
-  if ! codesign --verify --deep --strict --verbose=2 "$BUNDLE_PATH"; then
-    fail "codesign verification failed for bundled helper"
+  # The helper writes rolling logs next to the executable inside `Contents/MacOS`,
+  # so verify the signed Mach-O rather than treating runtime log files as sealed
+  # bundle resources.
+  if ! codesign --verify --strict --verbose=2 "$EXECUTABLE_PATH"; then
+    fail "codesign verification failed for bundled helper executable"
   fi
 
   if ! codesign -d --entitlements :- "$EXECUTABLE_PATH" 2>/dev/null | grep -q "com.apple.developer.endpoint-security.client"; then
