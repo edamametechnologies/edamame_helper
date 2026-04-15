@@ -5,7 +5,7 @@ on:
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 # Write permissions are required to upload the release asset.
@@ -132,14 +132,14 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           VERSION_TAG=v${VERSION}
-          echo "::set-output name=tag::$VERSION_TAG"
+          echo "tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
           if [[ -n "$(gh release view $VERSION_TAG --repo ${{ github.repository }} --json id -q .id)" ]]; then
-            echo "::set-output name=exists::true"
-            echo "::set-output name=upload_url::$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl )"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "upload_url=$(gh release view $VERSION_TAG --json uploadUrl -q .uploadUrl)" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=exists::false"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
