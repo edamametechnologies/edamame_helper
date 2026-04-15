@@ -5,6 +5,11 @@ on:
     # Run every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:
+    inputs:
+      version:
+        description: Specific release version to test (without leading v). Defaults to latest.
+        required: false
+        type: string
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
@@ -56,24 +61,27 @@ jobs:
           # Default fallback version in case we can't determine the latest
           VERSION="0.9.24"
           
-          # Try to get the latest version using curl and simple text processing
-          # This avoids using jq for better cross-platform compatibility
-          echo "Fetching latest release info..."
-          LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
-          
-          # Get the redirect URL which contains the version
-          # Redirect contains the latest version in the URL
-          if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
-            # Extract version from the URL (format: .../tag/vX.Y.Z)
-            if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
-              # Remove the 'v' prefix
-              VERSION="${VERSION_TAG#v}"
-              echo "Found latest version: $VERSION"
-            else
-              echo "Could not parse version from redirect URL, using fallback: $VERSION"
-            fi
+          REQUESTED_VERSION="${{ github.event.inputs.version || '' }}"
+          if [ -n "$REQUESTED_VERSION" ]; then
+            VERSION="$REQUESTED_VERSION"
+            echo "Using requested version: $VERSION"
           else
-            echo "Could not determine latest version, using fallback: $VERSION"
+            # Try to get the latest version using curl and simple text processing.
+            # This avoids using jq for better cross-platform compatibility.
+            echo "Fetching latest release info..."
+            LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
+
+            # Get the redirect URL which contains the version.
+            if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
+              if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
+                VERSION="${VERSION_TAG#v}"
+                echo "Found latest version: $VERSION"
+              else
+                echo "Could not parse version from redirect URL, using fallback: $VERSION"
+              fi
+            else
+              echo "Could not determine latest version, using fallback: $VERSION"
+            fi
           fi
           
           # Construct download URLs based on platform and version

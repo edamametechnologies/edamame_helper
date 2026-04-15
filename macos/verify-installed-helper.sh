@@ -18,11 +18,15 @@ case "${1:-}" in
 esac
 
 HELPER_ROOT="/Library/Application Support/EDAMAME/EDAMAME-Helper"
-EXECUTABLE_PATH="$HELPER_ROOT/edamame_helper"
+BUNDLE_PATH="$HELPER_ROOT/edamame_helper.app"
+CONTENTS_DIR="$BUNDLE_PATH/Contents"
+EXECUTABLE_PATH="$CONTENTS_DIR/MacOS/edamame_helper"
+PROFILE_PATH="$CONTENTS_DIR/embedded.provisionprofile"
 UNINSTALL_PATH="$HELPER_ROOT/uninstall.sh"
 PLIST_PATH="/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
-PROFILE_PATH="/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
 LABEL="system/com.edamametechnologies.edamame-helper"
+LEGACY_PROFILE="/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
+LOG_DIR="$CONTENTS_DIR/MacOS"
 
 if [ "$(id -u)" -eq 0 ]; then
   SUDO=""
@@ -43,8 +47,14 @@ run_root() {
 }
 
 dump_diagnostics() {
-  info "Helper root listing:"
+  info "Bundle root listing:"
   ls -la "$HELPER_ROOT" 2>&1 || true
+
+  info "Bundle contents listing:"
+  ls -la "$CONTENTS_DIR" 2>&1 || true
+
+  info "Executable directory listing:"
+  ls -la "$LOG_DIR" 2>&1 || true
 
   info "LaunchDaemon listing:"
   ls -la /Library/LaunchDaemons 2>&1 || true
@@ -59,12 +69,14 @@ dump_diagnostics() {
   pgrep -lf edamame_helper 2>&1 || true
 
   shopt -s nullglob
-  helper_logs=("$HELPER_ROOT"/edamame_helper* /var/log/edamame_helper*)
+  helper_logs=("$HELPER_ROOT"/edamame_helper_* "$LOG_DIR"/edamame_helper_* /var/log/edamame_helper*)
   if ((${#helper_logs[@]} > 0)); then
     info "Helper log output:"
     for log_path in "${helper_logs[@]}"; do
-      echo "[LOG] $log_path"
-      sed -n '1,200p' "$log_path" 2>&1 || true
+      if [ -f "$log_path" ]; then
+        echo "[LOG] $log_path"
+        sed -n '1,200p' "$log_path" 2>&1 || true
+      fi
     done
   fi
 
@@ -79,24 +91,30 @@ fail() {
 }
 
 verify_structure() {
-  info "Checking installed helper layout..."
+  info "Checking installed helper bundle layout..."
 
   [ -d "$HELPER_ROOT" ] || fail "Helper root missing at $HELPER_ROOT"
+  [ -d "$BUNDLE_PATH" ] || fail "Helper bundle missing at $BUNDLE_PATH"
+  [ -d "$CONTENTS_DIR/MacOS" ] || fail "Bundle executable directory missing"
   [ -f "$EXECUTABLE_PATH" ] || fail "Helper executable missing at $EXECUTABLE_PATH"
+  [ -f "$PROFILE_PATH" ] || fail "Embedded provisioning profile missing at $PROFILE_PATH"
   [ -f "$UNINSTALL_PATH" ] || fail "Helper uninstall script missing at $UNINSTALL_PATH"
   [ -f "$PLIST_PATH" ] || fail "LaunchDaemon plist missing at $PLIST_PATH"
-  [ -f "$PROFILE_PATH" ] || fail "Provisioning profile missing at $PROFILE_PATH"
 
-  if ! grep -qF "$EXECUTABLE_PATH" "$PLIST_PATH"; then
-    fail "LaunchDaemon plist does not point to the installed helper executable"
+  if [ -e "$LEGACY_PROFILE" ]; then
+    fail "Legacy provisioning profile path still populated at $LEGACY_PROFILE"
   fi
 
-  if ! codesign --verify --strict --verbose=2 "$EXECUTABLE_PATH"; then
-    fail "codesign verification failed for installed helper executable"
+  if ! grep -qF "$EXECUTABLE_PATH" "$PLIST_PATH"; then
+    fail "LaunchDaemon plist does not point to the bundled helper executable"
+  fi
+
+  if ! codesign --verify --deep --strict --verbose=2 "$BUNDLE_PATH"; then
+    fail "codesign verification failed for bundled helper"
   fi
 
   if ! codesign -d --entitlements :- "$EXECUTABLE_PATH" 2>/dev/null | grep -q "com.apple.developer.endpoint-security.client"; then
-    fail "Installed helper is missing the Endpoint Security entitlement"
+    fail "Bundled helper is missing the Endpoint Security entitlement"
   fi
 
   decoded_profile=$(mktemp /tmp/edamame-helper-profile-XXXXXX.plist)
@@ -104,23 +122,23 @@ verify_structure() {
 
   if ! /usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.developer.endpoint-security.client" "$decoded_profile" 2>/dev/null | grep -qx "true"; then
     rm -f "$decoded_profile"
-    fail "Installed provisioning profile does not authorize Endpoint Security"
+    fail "Embedded provisioning profile does not authorize Endpoint Security"
   fi
 
   if ! grep -q "com.edamametechnologies.edamame-helper" "$decoded_profile"; then
     rm -f "$decoded_profile"
-    fail "Provisioning profile does not match the helper identifier"
+    fail "Embedded provisioning profile does not match the helper identifier"
   fi
 
   rm -f "$decoded_profile"
-  info "Static helper verification passed"
+  info "Static helper bundle verification passed"
 }
 
 start_helper() {
   run_root launchctl print "$LABEL" >/dev/null 2>&1 || true
   run_root launchctl kickstart -k "$LABEL" 2>/dev/null || true
 
-  if ! pgrep -lf "[e]damame_helper" >/dev/null 2>&1; then
+  if ! pgrep -lf "$EXECUTABLE_PATH" >/dev/null 2>&1 && ! pgrep -lf "[e]damame_helper" >/dev/null 2>&1; then
     run_root launchctl bootstrap system "$PLIST_PATH" 2>/dev/null || true
     run_root launchctl enable "$LABEL" 2>/dev/null || true
     run_root launchctl kickstart -k "$LABEL" 2>/dev/null || true
@@ -133,7 +151,7 @@ verify_launch() {
   start_helper
 
   for _ in $(seq 1 30); do
-    if pgrep -lf "[e]damame_helper" >/dev/null 2>&1; then
+    if pgrep -lf "$EXECUTABLE_PATH" >/dev/null 2>&1 || pgrep -lf "[e]damame_helper" >/dev/null 2>&1; then
       info "Helper process is running"
       pgrep -lf "[e]damame_helper" 2>&1 || true
       run_root launchctl print "$LABEL" 2>&1 || true
