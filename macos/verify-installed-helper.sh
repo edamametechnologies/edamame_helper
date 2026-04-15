@@ -110,9 +110,9 @@ verify_structure() {
   fi
 
   # The helper writes rolling logs next to the executable inside `Contents/MacOS`,
-  # so verify the signed Mach-O rather than treating runtime log files as sealed
-  # bundle resources.
-  if ! codesign --verify --strict --verbose=2 "$EXECUTABLE_PATH"; then
+  # so skip resource-envelope validation and verify the signed Mach-O plus its
+  # entitlement payload directly.
+  if ! codesign --verify --ignore-resources --strict --verbose=2 "$EXECUTABLE_PATH"; then
     fail "codesign verification failed for bundled helper executable"
   fi
 
