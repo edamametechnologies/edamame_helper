@@ -19,8 +19,5 @@ cask "edamame-helper" do
 
   caveats <<~EOS
     This application requires admin privileges to install and uninstall.
-    The package installs an app-like helper bundle with an embedded Endpoint
-    Security provisioning profile and registers a LaunchDaemon that points into
-    that bundle.
   EOS
 end

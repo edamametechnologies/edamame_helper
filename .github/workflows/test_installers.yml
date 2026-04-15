@@ -5,15 +5,10 @@ on:
     # Run every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:
-    inputs:
-      version:
-        description: Specific release version to test (without leading v). Defaults to latest.
-        required: false
-        type: string
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,9 +33,6 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
       - name: Download installer from GitHub releases
         id: download
         continue-on-error: true
@@ -61,27 +53,24 @@ jobs:
           # Default fallback version in case we can't determine the latest
           VERSION="0.9.24"
           
-          REQUESTED_VERSION="${{ github.event.inputs.version || '' }}"
-          if [ -n "$REQUESTED_VERSION" ]; then
-            VERSION="$REQUESTED_VERSION"
-            echo "Using requested version: $VERSION"
-          else
-            # Try to get the latest version using curl and simple text processing.
-            # This avoids using jq for better cross-platform compatibility.
-            echo "Fetching latest release info..."
-            LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
-
-            # Get the redirect URL which contains the version.
-            if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
-              if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
-                VERSION="${VERSION_TAG#v}"
-                echo "Found latest version: $VERSION"
-              else
-                echo "Could not parse version from redirect URL, using fallback: $VERSION"
-              fi
+          # Try to get the latest version using curl and simple text processing
+          # This avoids using jq for better cross-platform compatibility
+          echo "Fetching latest release info..."
+          LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
+          
+          # Get the redirect URL which contains the version
+          # Redirect contains the latest version in the URL
+          if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
+            # Extract version from the URL (format: .../tag/vX.Y.Z)
+            if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
+              # Remove the 'v' prefix
+              VERSION="${VERSION_TAG#v}"
+              echo "Found latest version: $VERSION"
             else
-              echo "Could not determine latest version, using fallback: $VERSION"
+              echo "Could not parse version from redirect URL, using fallback: $VERSION"
             fi
+          else
+            echo "Could not determine latest version, using fallback: $VERSION"
           fi
           
           # Construct download URLs based on platform and version
@@ -181,7 +170,13 @@ jobs:
         if: matrix.platform == 'macos'
         id: verify_macos
         run: |
-          bash ./macos/verify-installed-helper.sh --structure-only
+          # Verify macOS helper installation
+          echo "ℹ️ Verifying macOS helper installation"
+          if ! ls -la /Library/LaunchDaemons | grep "com.edamametechnologies.edamame-helper.plist"; then
+            echo "❌ Helper service not found in LaunchDaemons"
+            exit 1
+          fi          
+          echo "✅ macOS helper verification successful"
         continue-on-error: true
         shell: bash
 
@@ -210,7 +205,18 @@ jobs:
         if: matrix.platform == 'macos'
         id: run_macos
         run: |
-          bash ./macos/verify-installed-helper.sh --launch-only
+          echo "ℹ️ Checking macOS helper functionality"
+
+          # Wait for 90 seconds to ensure the helper is running
+          sleep 90
+          
+          # Check helper process is running
+          if ps aux | grep "[e]damame_helper"; then
+            echo "✅ Helper process is running"
+          else
+            echo "❌ Helper process not running"
+            exit 1
+          fi
         continue-on-error: true
         shell: bash
 
