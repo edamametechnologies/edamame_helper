@@ -25,6 +25,7 @@ killall -9 edamame_helper 2>/dev/null || true
 echo "Deleting installed files and logs"
 rm -rf "$TARGET"
 rm -f /var/log/edamame_helper*
+rm -f /var/log/edamame/edamame_helper*
 rm -f "$PLIST"
 rm -f "$LEGACY_PROFILE"
 
