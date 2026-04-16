@@ -26,7 +26,7 @@ UNINSTALL_PATH="$HELPER_ROOT/uninstall.sh"
 PLIST_PATH="/Library/LaunchDaemons/com.edamametechnologies.edamame-helper.plist"
 LABEL="system/com.edamametechnologies.edamame-helper"
 LEGACY_PROFILE="/Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile"
-LOG_DIR="$CONTENTS_DIR/MacOS"
+LOG_DIR="/var/log/edamame"
 
 if [ "$(id -u)" -eq 0 ]; then
   SUDO=""
@@ -69,7 +69,7 @@ dump_diagnostics() {
   pgrep -lf edamame_helper 2>&1 || true
 
   shopt -s nullglob
-  helper_logs=("$HELPER_ROOT"/edamame_helper_* "$LOG_DIR"/edamame_helper_* /var/log/edamame_helper*)
+  helper_logs=("$HELPER_ROOT"/edamame_helper_* "$CONTENTS_DIR/MacOS"/edamame_helper_* /var/log/edamame/edamame_helper_* /var/log/edamame_helper*)
   if ((${#helper_logs[@]} > 0)); then
     info "Helper log output:"
     for log_path in "${helper_logs[@]}"; do
@@ -109,8 +109,8 @@ verify_structure() {
     fail "LaunchDaemon plist does not point to the bundled helper executable"
   fi
 
-  # The helper writes rolling logs next to the executable inside `Contents/MacOS`,
-  # so skip resource-envelope validation and verify the signed Mach-O plus its
+  # The helper writes rolling logs to /var/log/edamame/ (previously Contents/MacOS).
+  # Skip resource-envelope validation and verify the signed Mach-O plus its
   # entitlement payload directly.
   if ! codesign --verify --ignore-resources --strict --verbose=2 "$EXECUTABLE_PATH"; then
     fail "codesign verification failed for bundled helper executable"
