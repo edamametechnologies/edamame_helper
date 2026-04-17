@@ -52,6 +52,13 @@ jobs:
           edamame_id: ${{ github.run_id }}
           checkout: true
 
+      - name: Fix MSVC C1069 (TMP path with spaces)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "C:\Temp" | Out-Null
+          echo "TMP=C:\Temp" >> $env:GITHUB_ENV
+          echo "TEMP=C:\Temp" >> $env:GITHUB_ENV
+
       - name: Install additional packages w/ Chocolatey
         run: |
           choco install protoc wget
