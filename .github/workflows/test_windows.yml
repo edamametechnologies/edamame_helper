@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 90
 
     env:
+      CC_PREFER_CLANG_CL_OVER_MSVC: "1"
       EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
       PWNED_API_KEY: ${{ secrets.PWNED_API_KEY }}
       EDAMAME_TARGET: ${{ secrets.EDAMAME_TARGET }}
@@ -64,12 +65,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
-
-      - name: Select MSVC 14.43 toolset
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-          toolset: 14.43
 
       - name: Setup for edamame_helper
         shell: bash
