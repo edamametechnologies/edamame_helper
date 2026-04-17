@@ -21,7 +21,7 @@ permissions: write-all
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 90
 
     env:
@@ -51,13 +51,6 @@ jobs:
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
           checkout: true
-
-      - name: Fix MSVC C1069 (TMP path with spaces)
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "C:\Temp" | Out-Null
-          echo "TMP=C:\Temp" >> $env:GITHUB_ENV
-          echo "TEMP=C:\Temp" >> $env:GITHUB_ENV
 
       - name: Install additional packages w/ Chocolatey
         run: |
