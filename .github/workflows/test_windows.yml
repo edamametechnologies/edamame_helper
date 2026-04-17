@@ -65,10 +65,19 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: Select MSVC 14.43 toolset
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          toolset: 14.43
+
       - name: Setup for edamame_helper
         shell: bash
+        env:
+          CARGO_TARGET_DIR: target/cargo-install
+          CARGO_BUILD_JOBS: 1
         run: |
-          cargo install cargo-wix
+          cargo install --locked cargo-wix
           choco install wixtoolset
           echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
 
