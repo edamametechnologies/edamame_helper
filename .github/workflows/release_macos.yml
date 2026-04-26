@@ -189,9 +189,28 @@ jobs:
         run: |
           set -e
           VERSION=${{ steps.get_release.outputs.version }}
-          
-          # Download the release asset to calculate SHA256
-          wget -q https://github.com/${{ github.repository }}/releases/download/v${VERSION}/edamame-helper-macos-${VERSION}.pkg
+
+          # Download the release asset to calculate SHA256.
+          # The previous "Upload asset to release" step uploads the .pkg via
+          # the GitHub Releases API, but the public CDN URL we use here can
+          # take 15-60s to mirror after the API reports success. Retry up to
+          # 6 times with backoff so we don't fail the whole release on a
+          # transient mirror lag (observed in run 24944052698: wget exit 8).
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/edamame-helper-macos-${VERSION}.pkg"
+          for attempt in 1 2 3 4 5 6; do
+            if wget -q "$ASSET_URL"; then
+              echo "Downloaded release asset on attempt ${attempt}"
+              break
+            fi
+            if [ "$attempt" = "6" ]; then
+              echo "ERROR: failed to download $ASSET_URL after 6 attempts"
+              exit 1
+            fi
+            sleep_for=$((attempt * 10))
+            echo "wget attempt ${attempt} failed, retrying in ${sleep_for}s..."
+            rm -f "edamame-helper-macos-${VERSION}.pkg"
+            sleep "${sleep_for}"
+          done
           SHA_MACOS=$(sha256sum edamame-helper-macos-${VERSION}.pkg | awk '{print $1}')
           
           # Update Homebrew Cask
