@@ -69,9 +69,35 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
-        run: | 
+        run: |
+          set -e
           cargo build --release
-          cargo wix --nocapture --no-build
+          # cargo wix invokes WIX light.exe on the just-built binaries.
+          # Self-hosted Windows runner (vm-runner-windows) has Windows
+          # Defender real-time protection enabled, and Defender's heuristics
+          # occasionally false-positive on freshly-built edamame_helper.exe
+          # (a security tool that hooks process/network events). When that
+          # race hits, light.exe gets LGHT0001 "the file contains a virus
+          # or potentially unwanted software" and exits 1 even though no
+          # actual malware is present. Retry the WIX step a few times with
+          # backoff so a single Defender heuristic miss does not block the
+          # release; if every attempt fails we surface the original error.
+          attempt=0
+          max_attempts=5
+          while : ; do
+            attempt=$((attempt + 1))
+            if cargo wix --nocapture --no-build; then
+              echo "cargo wix succeeded on attempt ${attempt}"
+              break
+            fi
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "cargo wix failed after ${max_attempts} attempts; giving up"
+              exit 1
+            fi
+            sleep_for=$((attempt * 30))
+            echo "cargo wix attempt ${attempt} failed (likely Defender false-positive on light.exe); retrying in ${sleep_for}s..."
+            sleep "${sleep_for}"
+          done
 
       - name: Signing of the Helper
         # We can't use bash here, as the AzureSignTool is a .NET tool
