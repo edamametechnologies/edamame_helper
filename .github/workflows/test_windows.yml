@@ -140,14 +140,14 @@ jobs:
           #fi
         continue-on-error: true
 
-      # Runtime runner protection: dump findings and fail the job if any
-      # non-dismissed HIGH/CRITICAL finding fired during the run.
+      # Runtime runner protection: dump findings (visibility-only on
+      # github-hosted ephemeral runners). See workspace.mdc.
       - name: EDAMAME Posture vulnerability gate
         if: always() && github.ref == 'refs/heads/main'
         uses: edamametechnologies/edamame_posture_action@v1
         with:
           dump_vulnerability_findings: true
-          exit_on_vulnerability_findings: true
+          exit_on_vulnerability_findings: false
 
       - name: Slack alerts
         if: steps.tests.outcome != 'success'
