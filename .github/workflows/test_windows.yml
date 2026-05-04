@@ -66,9 +66,31 @@ jobs:
           EDAMAME_LLM_API_KEY: ${{ secrets.EDAMAME_LLM_API_KEY }}
 
       - name: Install additional packages w/ Chocolatey
+        shell: pwsh
         run: |
-          choco install protoc wget
-          # Only install AzureSignTool if not already installed
+          # Pin to 25.3.0: Chocolatey protoc 34.0.0+ trips a Defender/AV
+          # file-lock race during install on the windows-2022 hosted runner
+          # ("The process cannot access the file ... chocolateyinstall.ps1
+          # because it is being used by another process"). Same workaround
+          # already in use by edamame_foundation/.github/workflows/tests.yml.
+          $maxAttempts = 3
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+            choco install protoc --version=25.3.0 -y
+            $exit = $LASTEXITCODE
+            if ($exit -eq 0 -and (Get-Command protoc.exe -ErrorAction SilentlyContinue)) {
+              Write-Host "protoc installed successfully on attempt $i"
+              break
+            }
+            Write-Host "protoc install attempt $i failed (exit=$exit). Sleeping 10s and retrying..."
+            Start-Sleep -Seconds 10
+            if ($i -eq $maxAttempts) {
+              throw "protoc install failed after $maxAttempts attempts"
+            }
+          }
+          # Wget is best-effort (already pre-installed via Setup EDAMAME Posture)
+          if (-not (Get-Command wget.exe -ErrorAction SilentlyContinue)) {
+            choco install wget -y
+          }
           if (-not (dotnet tool list --global | Select-String -Pattern "AzureSignTool")) {
             dotnet tool install --global AzureSignTool
           }
