@@ -127,8 +127,29 @@ jobs:
 
       - name: Build helper and its standalone installer
         shell: bash
+        env:
+          # Single-threaded build avoids the github-hosted windows-2022
+          # rlib file-lock race ("failed to build archive at ...rlib:
+          # failed to open object file: The process cannot access the
+          # file because it is being used by another process. (os error
+          # 32)") caused by Defender real-time scanning files that
+          # cargo's parallel codegen jobs are simultaneously writing.
+          CARGO_BUILD_JOBS: 1
         run: |
-          cargo build --release
+          # Retry cargo build up to 3 times to absorb transient os-error-32
+          # rlib renames; this hits even single-jobs on windows-2022 when
+          # Defender hashes a freshly written archive.
+          attempt=1
+          max=3
+          until cargo build --release; do
+            if [ $attempt -ge $max ]; then
+              echo "cargo build failed after $max attempts"
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+            echo "cargo build attempt $((attempt - 1)) failed, sleeping 10s and retrying..."
+            sleep 10
+          done
           cargo wix --nocapture --no-build
 
       - name: Signing of the Helper
