@@ -1,6 +1,6 @@
 [package]
 name = "edamame_helper"
-version = "1.3.4"
+version = "1.3.5"
 edition = "2021"
 authors = ["EDAMAME Technologies"]
 description = "This system helper is required for advanced Security Score analysis and remediations within the EDAMAME Security application."
@@ -14,8 +14,14 @@ debug = true
 #edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture", "fim" ] }
 edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = [ "packetcapture", "fim" ] }
 # Local copy in order to allow rapid development/debug
-#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim" ] }
-flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim" ] }
+# `etw` is required for kernel-level FIM process attribution on Windows
+# (see flodbadd/src/l7_etw.rs and FALSEPOSITIVESFIX.md FP-WIN-16). Without
+# it the helper falls back to Restart Manager only, which misses every
+# atomic-rename writer (Chrome `User Data`, Outlook `.ost`, sqlite WAL),
+# leaving 90%+ of FIM events with no writer PID and self-access
+# suppression dead.
+#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim", "etw" ] }
+flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim", "etw" ] }
 
 # Global statics w/ mutex
 lazy_static = "1.5.0"
@@ -54,5 +60,5 @@ vergen-gitcl = { version = "10.0.0-beta.5", features = [ "build", "cargo", "rust
 [target.'cfg(target_os = "windows")'.build-dependencies]
 # For the winpcap installation support in Windows
 # Local copy in order to allow rapid development/debug
-#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture" ] }
-flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture" ] }
+#flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture", "etw" ] }
+flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture", "etw" ] }
