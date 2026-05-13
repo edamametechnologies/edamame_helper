@@ -151,6 +151,39 @@ jobs:
           choco install wixtoolset
           echo "/c/Program\ Files\ \(x86\)/Windows\ Kits/10/bin/10.0.19041.0/x64" >> $GITHUB_PATH
 
+      - name: Add Defender exclusions for build temp paths
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          # Mitigate Defender real-time-scan race on prost-build's
+          # `$env:TEMP\prost-buildXXX\prost-descriptor-set` and on rlib
+          # renames in `target\`. tonic-build's retry-3x-in-process is not
+          # enough -- each retry creates a new temp dir and Defender hits
+          # it again. Single-threaded build (CARGO_BUILD_JOBS=1) reduces
+          # but does not eliminate the race. ExclusionPath on TEMP + the
+          # repo target dir is the established mitigation.
+          $tempDir = $env:TEMP
+          $repoDir = "${env:GITHUB_WORKSPACE}"
+          $targetDir = "${env:GITHUB_WORKSPACE}\target"
+          $cargoHome = "${env:USERPROFILE}\.cargo"
+          $rustupHome = "${env:USERPROFILE}\.rustup"
+          foreach ($p in @($tempDir, $repoDir, $targetDir, $cargoHome, $rustupHome)) {
+            try {
+              Add-MpPreference -ExclusionPath $p -ErrorAction Stop
+              Write-Host "Added Defender ExclusionPath: $p"
+            } catch {
+              Write-Host "WARN: failed to add Defender ExclusionPath for ${p}: $_"
+            }
+          }
+          foreach ($e in @("cargo.exe","rustc.exe","rustdoc.exe","link.exe","cl.exe","lib.exe","mt.exe","cmake.exe","ninja.exe","light.exe","candle.exe","signtool.exe","AzureSignTool.exe")) {
+            try {
+              Add-MpPreference -ExclusionProcess $e -ErrorAction Stop
+              Write-Host "Added Defender ExclusionProcess: $e"
+            } catch {
+              Write-Host "WARN: failed to add Defender ExclusionProcess for ${e}: $_"
+            }
+          }
+
       - name: Build helper and its standalone installer
         shell: bash
         env:
