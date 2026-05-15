@@ -195,6 +195,16 @@ jobs:
           # cargo's parallel codegen jobs are simultaneously writing.
           CARGO_BUILD_JOBS: 1
         run: |
+          # tonic/prost build scripts use the process temp directory for their
+          # descriptor set. Keep that temp tree under target/, which is already
+          # Defender-excluded above, to avoid hosted Windows os-error-32 locks
+          # on %LOCALAPPDATA%\Temp\prost-build*\prost-descriptor-set.
+          mkdir -p "$GITHUB_WORKSPACE/target/prost-temp"
+          PROST_TEMP_WIN="$(cygpath -w "$GITHUB_WORKSPACE/target/prost-temp")"
+          export TMP="$PROST_TEMP_WIN"
+          export TEMP="$PROST_TEMP_WIN"
+          echo "Using build temp: $TEMP"
+
           # Retry cargo build up to 3 times to absorb transient os-error-32
           # rlib renames; this hits even single-jobs on windows-2022 when
           # Defender hashes a freshly written archive.
