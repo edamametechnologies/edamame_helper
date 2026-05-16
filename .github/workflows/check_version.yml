@@ -1,5 +1,4 @@
 # This workflows check and ensures that the version has been updated before merging to main.
-# XXX: trigger this workflow only for PR from dev to main ?
 
 name: Check version
 
