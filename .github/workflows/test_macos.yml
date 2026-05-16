@@ -154,10 +154,7 @@ jobs:
         uses: edamametechnologies/edamame_posture_action@v1
         with:
           dump_vulnerability_findings: true
-          # macos-latest is GitHub-hosted and uses the previously released
-          # detector. Dump findings for visibility; keep strict gates on
-          # persistent self-hosted runners only.
-          exit_on_vulnerability_findings: false
+          exit_on_vulnerability_findings: true
 
       - name: Slack alerts
         if: steps.tests.outcome != 'success'
