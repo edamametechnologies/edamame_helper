@@ -233,9 +233,38 @@ jobs:
       - name: Tests
         id: tests
         shell: bash
+        env:
+          # Same single-threaded constraint as the build step to dampen the
+          # rlib / prost-descriptor-set os-error-32 file-lock race that hits
+          # the test debug rebuild on self-hosted vm-runner-windows.
+          CARGO_BUILD_JOBS: 1
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          make test
+          # tonic/prost build scripts open `prost-descriptor-set` in the
+          # process temp dir; keep that under the Defender-excluded
+          # `target/prost-temp` tree so the debug rebuild for tests stops
+          # hitting the same `os error 32` race as the release build above.
+          mkdir -p "$GITHUB_WORKSPACE/target/prost-temp"
+          PROST_TEMP_WIN="$(cygpath -w "$GITHUB_WORKSPACE/target/prost-temp")"
+          export TMP="$PROST_TEMP_WIN"
+          export TEMP="$PROST_TEMP_WIN"
+          echo "Using build temp: $TEMP"
+
+          # Retry `make test` up to 3 times to absorb transient prost-build /
+          # rlib file-lock races the same way the build step does. Each
+          # retry reuses the partially-populated target dir, so attempt 2+
+          # only redoes the failed crate.
+          attempt=1
+          max=3
+          until make test; do
+            if [ $attempt -ge $max ]; then
+              echo "make test failed after $max attempts"
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+            echo "make test attempt $((attempt - 1)) failed, sleeping 10s and retrying..."
+            sleep 10
+          done
           # Test the installer
           echo "Testing the installer"
           cd ./target/wix/
