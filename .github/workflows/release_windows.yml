@@ -44,6 +44,7 @@ jobs:
           auto_remediate: true
           network_scan: true
           auto_whitelist: true
+          auto_whitelist_artifact_name: edamame-auto-whitelist-vm-runner-windows
           wait_for_api: true
           checkout: true
           packet_capture: true
