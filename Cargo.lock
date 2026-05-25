@@ -472,7 +472,7 @@ dependencies = [
  "cexpr",
  "clang-sys",
  "itertools 0.13.0",
- "log 0.4.29",
+ "log 0.4.30",
  "prettyplease",
  "proc-macro2",
  "quote",
@@ -623,7 +623,7 @@ dependencies = [
  "env_logger",
  "itertools 0.11.0",
  "lazy_static",
- "log 0.4.29",
+ "log 0.4.30",
  "mustache",
  "regex",
  "rustc-cfg",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "1.3.16"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#78fa8367cf72511674960b533680c2d91706b959"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#89ff147d2101aa7bb0deaed5f082dd2c4fcc1426"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1339,7 +1339,7 @@ checksum = "4cd405aab171cb85d6735e5c8d9db038c17d3ca007a4d2c25f337935c3d90580"
 dependencies = [
  "humantime",
  "is-terminal",
- "log 0.4.29",
+ "log 0.4.30",
  "regex",
  "termcolor",
 ]
@@ -1499,7 +1499,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "1.3.16"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#38d87dc36c90f4ddab23ec80d170b07f2e4ffd03"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#a8779f9f35966ff54ba492d8bb94f7b2d12b54b0"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -2038,7 +2038,7 @@ dependencies = [
  "core-foundation-sys",
  "iana-time-zone-haiku",
  "js-sys",
- "log 0.4.29",
+ "log 0.4.30",
  "wasm-bindgen",
  "windows-core 0.62.2",
 ]
@@ -2409,14 +2409,14 @@ version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e19e8d5c34a3e0e2223db8e060f9e8264aeeb5c5fc64a4ee9965c062211c024b"
 dependencies = [
- "log 0.4.29",
+ "log 0.4.30",
 ]
 
 [[package]]
 name = "log"
-version = "0.4.29"
+version = "0.4.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+checksum = "616ec5685824bcc94416c6d4a7a446eea774a31efd7062c8480ba6fd06d7a6e5"
 
 [[package]]
 name = "lru-slab"
@@ -2515,7 +2515,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50b7e5b27aa02a74bac8c3f23f448f8d87ff11f92d3aac1a6ed369ee08cc56c1"
 dependencies = [
  "libc",
- "log 0.4.29",
+ "log 0.4.30",
  "wasi",
  "windows-sys 0.61.2",
 ]
@@ -2599,7 +2599,7 @@ checksum = "cd6c30ed10fa69cc491d491b85cc971f6bdeb8e7367b7cde2ee6cc878d583fae"
 dependencies = [
  "bytes",
  "libc",
- "log 0.4.29",
+ "log 0.4.30",
 ]
 
 [[package]]
@@ -2659,7 +2659,7 @@ dependencies = [
  "inotify",
  "kqueue",
  "libc",
- "log 0.4.29",
+ "log 0.4.30",
  "mio",
  "notify-types",
  "walkdir",
@@ -2821,7 +2821,7 @@ dependencies = [
  "byteorder",
  "eui48",
  "failure",
- "log 0.4.29",
+ "log 0.4.30",
  "regex",
  "serde",
  "serde_derive",
@@ -3231,7 +3231,7 @@ checksum = "343d3bd7056eda839b03204e68deff7d1b13aba7af2b2fd16890697274262ee7"
 dependencies = [
  "heck",
  "itertools 0.14.0",
- "log 0.4.29",
+ "log 0.4.30",
  "multimap",
  "petgraph",
  "prettyplease",
@@ -3583,7 +3583,7 @@ dependencies = [
  "hyper-rustls",
  "hyper-util",
  "js-sys",
- "log 0.4.29",
+ "log 0.4.30",
  "percent-encoding",
  "pin-project-lite",
  "quinn",
@@ -3689,7 +3689,7 @@ version = "0.23.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef86cd5876211988985292b91c96a8f2d298df24e75989a43a3c73f2d4d8168b"
 dependencies = [
- "log 0.4.29",
+ "log 0.4.30",
  "once_cell",
  "ring",
  "rustls-pki-types",
@@ -3947,7 +3947,7 @@ checksum = "911bd979bf1070a3f3aa7b691a3b3e9968f339ceeec89e08c280a8a22207a32f"
 dependencies = [
  "futures-executor",
  "futures-util",
- "log 0.4.29",
+ "log 0.4.30",
  "once_cell",
  "parking_lot",
  "scc",
@@ -4299,7 +4299,7 @@ dependencies = [
 [[package]]
 name = "threatmodels_rs"
 version = "0.1.1"
-source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#feeb53abc54f1d1a3b4ed142c43b0ebccb1b2925"
+source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#fb4ae9194d2aa644e4ba6247cc27962b73ab79e8"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4666,7 +4666,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
 dependencies = [
- "log 0.4.29",
+ "log 0.4.30",
  "once_cell",
  "tracing-core",
 ]
@@ -4716,7 +4716,7 @@ checksum = "40ce102ab67701b8526c123c1bab5cbe42d7040ccfd0f64af1a385808d2f43de"
 [[package]]
 name = "undeadlock"
 version = "1.2.0"
-source = "git+https://github.com/edamametechnologies/undeadlock?branch=main#f52b5b2484621fb949cee7dce126c4301e736d2c"
+source = "git+https://github.com/edamametechnologies/undeadlock?branch=main#b5852a5d86d77d8a2e03a8a6d452fce0c8f2dd42"
 dependencies = [
  "dashmap",
  "tokio",
@@ -4770,7 +4770,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dea7109cdcd5864d4eeb1b58a1648dc9bf520360d7af16ec26d0a9354bafcfc0"
 dependencies = [
  "base64 0.22.1",
- "log 0.4.29",
+ "log 0.4.30",
  "percent-encoding",
  "rustls",
  "rustls-pki-types",
@@ -4788,7 +4788,7 @@ dependencies = [
  "base64 0.22.1",
  "http",
  "httparse",
- "log 0.4.29",
+ "log 0.4.30",
 ]
 
 [[package]]
@@ -4811,7 +4811,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24cc0f6d6f267b73e5a2cadf007ba8f9bc39c6a6f9666f8cf25ea809a153b032"
 dependencies = [
  "libc",
- "log 0.4.29",
+ "log 0.4.30",
 ]
 
 [[package]]
@@ -5073,7 +5073,7 @@ source = "git+https://github.com/edamametechnologies/mdns#9c08274b820fcc2b4282ff
 dependencies = [
  "byteorder",
  "if-addrs",
- "log 0.4.29",
+ "log 0.4.30",
  "rand 0.8.6",
  "smol",
  "socket2 0.5.10",
@@ -5612,7 +5612,7 @@ dependencies = [
  "anyhow",
  "bitflags 2.11.1",
  "indexmap 2.14.0",
- "log 0.4.29",
+ "log 0.4.30",
  "serde",
  "serde_derive",
  "serde_json",
@@ -5631,7 +5631,7 @@ dependencies = [
  "anyhow",
  "id-arena",
  "indexmap 2.14.0",
- "log 0.4.29",
+ "log 0.4.30",
  "semver",
  "serde",
  "serde_derive",
@@ -5797,6 +5797,6 @@ checksum = "f05cd8797d63865425ff89b5c4a48804f35ba0ce8d125800027ad6017d2b5249"
 dependencies = [
  "bumpalo",
  "crc32fast",
- "log 0.4.29",
+ "log 0.4.30",
  "simd-adler32",
 ]
