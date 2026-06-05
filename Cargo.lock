@@ -472,7 +472,7 @@ dependencies = [
  "cexpr",
  "clang-sys",
  "itertools",
- "log 0.4.31",
+ "log 0.4.32",
  "prettyplease",
  "proc-macro2",
  "quote",
@@ -623,7 +623,7 @@ dependencies = [
  "env_logger",
  "itertools",
  "lazy_static",
- "log 0.4.31",
+ "log 0.4.32",
  "mustache",
  "regex",
  "rustc-cfg",
@@ -717,9 +717,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.44"
+version = "0.4.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
+checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
 dependencies = [
  "iana-time-zone",
  "js-sys",
@@ -1186,7 +1186,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "1.3.23"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#37d5bbe0df5801a4b619cf04f532ebd9a4c41900"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#d07a69e704ab5de57718b2858b18a1eb8f01a651"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1339,7 +1339,7 @@ checksum = "4cd405aab171cb85d6735e5c8d9db038c17d3ca007a4d2c25f337935c3d90580"
 dependencies = [
  "humantime",
  "is-terminal",
- "log 0.4.31",
+ "log 0.4.32",
  "regex",
  "termcolor",
 ]
@@ -1499,7 +1499,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "1.3.23"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#77ebcee5d0ccf131caf2e7588492e12008ff19df"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#2e9e4d22d7d1f470d9fc8f67f8ce16a28df25293"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -2038,7 +2038,7 @@ dependencies = [
  "core-foundation-sys",
  "iana-time-zone-haiku",
  "js-sys",
- "log 0.4.31",
+ "log 0.4.32",
  "wasm-bindgen",
  "windows-core 0.62.2",
 ]
@@ -2391,14 +2391,14 @@ version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e19e8d5c34a3e0e2223db8e060f9e8264aeeb5c5fc64a4ee9965c062211c024b"
 dependencies = [
- "log 0.4.31",
+ "log 0.4.32",
 ]
 
 [[package]]
 name = "log"
-version = "0.4.31"
+version = "0.4.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "113b30b4cd05f7c06868fdb2854f66a7b9fece9a48425351cd532e810d74024f"
+checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
 
 [[package]]
 name = "lru-slab"
@@ -2497,7 +2497,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "02bd0af71c67b473010cbbc60715ee815645a4dc942899111f494b4b737d6fda"
 dependencies = [
  "libc",
- "log 0.4.31",
+ "log 0.4.32",
  "wasi",
  "windows-sys 0.61.2",
 ]
@@ -2581,7 +2581,7 @@ checksum = "cd6c30ed10fa69cc491d491b85cc971f6bdeb8e7367b7cde2ee6cc878d583fae"
 dependencies = [
  "bytes",
  "libc",
- "log 0.4.31",
+ "log 0.4.32",
 ]
 
 [[package]]
@@ -2641,7 +2641,7 @@ dependencies = [
  "inotify",
  "kqueue",
  "libc",
- "log 0.4.31",
+ "log 0.4.32",
  "mio",
  "notify-types",
  "walkdir",
@@ -2803,7 +2803,7 @@ dependencies = [
  "byteorder",
  "eui48",
  "failure",
- "log 0.4.31",
+ "log 0.4.32",
  "regex",
  "serde",
  "serde_derive",
@@ -3213,7 +3213,7 @@ checksum = "343d3bd7056eda839b03204e68deff7d1b13aba7af2b2fd16890697274262ee7"
 dependencies = [
  "heck",
  "itertools",
- "log 0.4.31",
+ "log 0.4.32",
  "multimap",
  "petgraph",
  "prettyplease",
@@ -3565,7 +3565,7 @@ dependencies = [
  "hyper-rustls",
  "hyper-util",
  "js-sys",
- "log 0.4.31",
+ "log 0.4.32",
  "percent-encoding",
  "pin-project-lite",
  "quinn",
@@ -3671,7 +3671,7 @@ version = "0.23.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef86cd5876211988985292b91c96a8f2d298df24e75989a43a3c73f2d4d8168b"
 dependencies = [
- "log 0.4.31",
+ "log 0.4.32",
  "once_cell",
  "ring",
  "rustls-pki-types",
@@ -3876,9 +3876,9 @@ dependencies = [
 
 [[package]]
 name = "serde_with"
-version = "3.20.0"
+version = "3.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e72c1c2cb7b223fafb600a619537a871c2818583d619401b785e7c0b746ccde2"
+checksum = "76a5c54c7310e7b8b9577c286d7e399ddd876c3e12b3ed917a8aabc4b96e9e8c"
 dependencies = [
  "base64 0.22.1",
  "bs58",
@@ -3896,9 +3896,9 @@ dependencies = [
 
 [[package]]
 name = "serde_with_macros"
-version = "3.20.0"
+version = "3.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b90c488738ecb4fb0262f41f43bc40efc5868d9fb744319ddf5f5317f417bfac"
+checksum = "84d57bc0c8b9a17920c178daa6bb924850d54a9c97ab45194bb8c17ad66bb660"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -3914,7 +3914,7 @@ checksum = "699f4197115b8a7e7ff19c9a315a4bd6fffec26cc4626ef45ecaea389e081c6d"
 dependencies = [
  "futures-executor",
  "futures-util",
- "log 0.4.31",
+ "log 0.4.32",
  "once_cell",
  "parking_lot",
  "serial_test_derive",
@@ -4271,7 +4271,7 @@ dependencies = [
 [[package]]
 name = "threatmodels_rs"
 version = "0.1.1"
-source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#8d436bb7566b3dd69570aca4587fc9d9affe5ae3"
+source = "git+https://github.com/edamametechnologies/threatmodels-rs?branch=main#274981bd30e7d30b813e7b7ae36b04a7b4230a25"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4638,7 +4638,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
 dependencies = [
- "log 0.4.31",
+ "log 0.4.32",
  "once_cell",
  "tracing-core",
 ]
@@ -4742,7 +4742,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dea7109cdcd5864d4eeb1b58a1648dc9bf520360d7af16ec26d0a9354bafcfc0"
 dependencies = [
  "base64 0.22.1",
- "log 0.4.31",
+ "log 0.4.32",
  "percent-encoding",
  "rustls",
  "rustls-pki-types",
@@ -4760,7 +4760,7 @@ dependencies = [
  "base64 0.22.1",
  "http",
  "httparse",
- "log 0.4.31",
+ "log 0.4.32",
 ]
 
 [[package]]
@@ -4783,7 +4783,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24cc0f6d6f267b73e5a2cadf007ba8f9bc39c6a6f9666f8cf25ea809a153b032"
 dependencies = [
  "libc",
- "log 0.4.31",
+ "log 0.4.32",
 ]
 
 [[package]]
@@ -5045,7 +5045,7 @@ source = "git+https://github.com/edamametechnologies/mdns#9c08274b820fcc2b4282ff
 dependencies = [
  "byteorder",
  "if-addrs",
- "log 0.4.31",
+ "log 0.4.32",
  "rand 0.8.6",
  "smol",
  "socket2 0.5.10",
@@ -5584,7 +5584,7 @@ dependencies = [
  "anyhow",
  "bitflags 2.12.1",
  "indexmap 2.14.0",
- "log 0.4.31",
+ "log 0.4.32",
  "serde",
  "serde_derive",
  "serde_json",
@@ -5603,7 +5603,7 @@ dependencies = [
  "anyhow",
  "id-arena",
  "indexmap 2.14.0",
- "log 0.4.31",
+ "log 0.4.32",
  "semver",
  "serde",
  "serde_derive",
@@ -5620,9 +5620,9 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 
 [[package]]
 name = "yoke"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abe8c5fda708d9ca3df187cae8bfb9ceda00dd96231bed36e445a1a48e66f9ca"
+checksum = "709fe23a0424b6a435d82152b1bd3fdfb0833487d5fa90d05d42762a9891fef5"
 dependencies = [
  "stable_deref_trait",
  "yoke-derive",
@@ -5769,6 +5769,6 @@ checksum = "f05cd8797d63865425ff89b5c4a48804f35ba0ce8d125800027ad6017d2b5249"
 dependencies = [
  "bumpalo",
  "crc32fast",
- "log 0.4.31",
+ "log 0.4.32",
  "simd-adler32",
 ]
