@@ -11,11 +11,9 @@ The helper relies on [EDAMAME Foundation](https://github.com/edamametechnologies
 
 #### Homebrew Installation (Recommended)
 ```bash
-# Add the EDAMAME tap
-brew tap edamametechnologies/tap
-
 # Install EDAMAME Helper
-brew install --cask edamame-helper
+# Fully-qualified name self-trusts the EDAMAME tap (Homebrew 6.0.0 Tap Trust)
+brew install --cask edamametechnologies/tap/edamame-helper
 
 # Verify installation
 /Library/Application\ Support/EDAMAME/EDAMAME-Helper/edamame_helper.app/Contents/MacOS/edamame_helper --version
@@ -23,7 +21,7 @@ brew install --cask edamame-helper
 
 To update to the latest version:
 ```bash
-brew upgrade --cask edamame-helper
+brew upgrade --cask edamametechnologies/tap/edamame-helper
 ```
 
 #### Manual PKG Installation
