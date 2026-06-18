@@ -1263,7 +1263,7 @@ dependencies = [
 
 [[package]]
 name = "edamame_helper"
-version = "1.4.1"
+version = "1.4.2"
 dependencies = [
  "base64 0.22.1",
  "cargo-wix",
