@@ -1189,7 +1189,7 @@ dependencies = [
 [[package]]
 name = "edamame_foundation"
 version = "1.7.0"
-source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#242d79cf6663c6c3847c1949e8df5f60ffd277f3"
+source = "git+https://github.com/edamametechnologies/edamame_foundation?branch=main#9996c9e64845c5c34e28b332de6e8372b317e0af"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1515,7 +1515,7 @@ dependencies = [
 [[package]]
 name = "flodbadd"
 version = "1.7.0"
-source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#ea466b0732600b89a127735a7497026cdac186bf"
+source = "git+https://github.com/edamametechnologies/flodbadd?branch=main#7d878bfce83d59f1ae5c21d4f2794fa2fa0b1706"
 dependencies = [
  "anyhow",
  "arc-swap",
@@ -1775,9 +1775,9 @@ checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
 
 [[package]]
 name = "glob"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
+checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
 
 [[package]]
 name = "h2"
