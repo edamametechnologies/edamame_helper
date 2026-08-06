@@ -32,6 +32,7 @@ jobs:
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}
           checkout: true
+          wait_for_api: true
 
       - run: rustup component add rustfmt
 
