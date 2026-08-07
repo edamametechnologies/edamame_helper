@@ -41,9 +41,46 @@ macos_release:
 
 macos_debug_console:
 	RUSTFLAGS="--cfg tokio_unstable" cargo build
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb ./target/debug/edamame_helper"
+	$(stage_debug_helper_app)
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=trace; rust-lldb $(DEBUG_APP)/Contents/MacOS/edamame_helper"
 
 PROV_PROFILE = $(shell ./macos/find-provisioning-profile.sh com.edamametechnologies.edamame-helper 2>/dev/null)
+SYSTEM_PROV_PROFILE = /Library/MobileDevice/Provisioning Profiles/EDAMAME_Helper.provisionprofile
+DEBUG_APP = ./target/debug/edamame_helper.app
+
+# macOS 15+/26 AMFI no longer treats a system-wide profile as authorizing a bare
+# Mach-O with restricted ES entitlements. Stage a minimal .app with an embedded
+# profile (same shape as make-pkg.sh) before signing/launching under sudo+lldb.
+define stage_debug_helper_app
+	@PROFILE="$(PROV_PROFILE)"; \
+	if [ -z "$$PROFILE" ] && [ -f "$(SYSTEM_PROV_PROFILE)" ]; then PROFILE="$(SYSTEM_PROV_PROFILE)"; fi; \
+	if [ -z "$$PROFILE" ] || [ ! -f "$$PROFILE" ]; then \
+		echo "Missing ES provisioning profile. Run: make install_provisioning" >&2; \
+		exit 1; \
+	fi; \
+	rm -rf "$(DEBUG_APP)"; \
+	mkdir -p "$(DEBUG_APP)/Contents/MacOS"; \
+	cp ./target/debug/edamame_helper "$(DEBUG_APP)/Contents/MacOS/edamame_helper"; \
+	cp "$$PROFILE" "$(DEBUG_APP)/Contents/embedded.provisionprofile"; \
+	printf '%s\n' \
+		'<?xml version="1.0" encoding="UTF-8"?>' \
+		'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+		'<plist version="1.0"><dict>' \
+		'<key>CFBundleExecutable</key><string>edamame_helper</string>' \
+		'<key>CFBundleIdentifier</key><string>com.edamametechnologies.edamame-helper</string>' \
+		'<key>CFBundleName</key><string>EDAMAME Helper</string>' \
+		'<key>CFBundlePackageType</key><string>APPL</string>' \
+		'<key>CFBundleShortVersionString</key><string>0.0.1</string>' \
+		'<key>CFBundleVersion</key><string>0.0.1</string>' \
+		'<key>LSBackgroundOnly</key><true/>' \
+		'</dict></plist>' > "$(DEBUG_APP)/Contents/Info.plist"; \
+	codesign --force \
+		--entitlements ./macos/edamame_helper_debug.entitlements \
+		-i com.edamametechnologies.edamame-helper \
+		-s "Developer ID Application: Edamame Technologies (WSL782B48J)" \
+		"$(DEBUG_APP)"; \
+	echo "Staged debug app: $(DEBUG_APP) (profile=$$PROFILE)"
+endef
 
 macos_es_test:
 	cargo test --test es_entitlement_test --no-run 2>&1
@@ -57,12 +94,8 @@ macos_es_test:
 
 macos_debug:
 	cargo build
-	codesign --force \
-		--entitlements ./macos/edamame_helper_debug.entitlements \
-		-i com.edamametechnologies.edamame-helper \
-		-s "Developer ID Application: Edamame Technologies (WSL782B48J)" \
-		./target/debug/edamame_helper
-	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,edamame_foundation::runner_cli=debug; rust-lldb ./target/debug/edamame_helper"
+	$(stage_debug_helper_app)
+	sudo bash -c "export RUST_BACKTRACE=1; export EDAMAME_LOG_LEVEL=info,edamame_foundation::runner_cli=debug; rust-lldb $(DEBUG_APP)/Contents/MacOS/edamame_helper"
 
 
 macos_profile:
