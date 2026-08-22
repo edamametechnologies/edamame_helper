@@ -4,3 +4,8 @@
 /edamame_helper.xcodeproj/project.xcworkspace/xcuserdata/
 
 .cursor
+
+# AI rules: dev-only symlinks into ../edamame_rules, recreated by edamame_rules/setup.sh
+.claude/
+CLAUDE.md
+AGENTS.md
