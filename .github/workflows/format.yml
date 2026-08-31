@@ -15,12 +15,9 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
 
-    env:
-      EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
-      EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
-      EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
-      EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
-      EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
+    # CI-3 / SG-002: secrets are step-scoped, not job-scoped. The envcrypt
+    # compile inputs live on the one step that compiles (`cargo hack check`);
+    # the other steps see no secrets.
     
     steps:
 
@@ -50,5 +47,13 @@ jobs:
           cargo install -f cargo-hack
 
       - name: Check all features
+        # envcrypt consumes these at compile time (envc! fails the build when
+        # one is missing), so they are needed to compile -- but only here.
+        env:
+          EDAMAME_HELPER_SENTRY: ${{ secrets.EDAMAME_HELPER_SENTRY }}
+          EDAMAME_SERVER: ${{ secrets.EDAMAME_SERVER }}
+          EDAMAME_SERVER_PEM: ${{ secrets.EDAMAME_SERVER_PEM }}
+          EDAMAME_SERVER_KEY: ${{ secrets.EDAMAME_SERVER_KEY }}
+          EDAMAME_CLIENT_CA_PEM: ${{ secrets.EDAMAME_CLIENT_CA_PEM }}
         run: |
           cargo hack check --all-features --all-targets
