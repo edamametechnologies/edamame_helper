@@ -112,7 +112,8 @@ fn es_receives_file_events() {
     // Wait for some file events to accumulate from normal system activity
     std::thread::sleep(Duration::from_secs(3));
 
-    let (cr, _cds, _cdn, clr, _clm, rn, ul, _oth) = l7_es::file_event_stats();
+    // (create, create_dest_some, create_dest_none, write, close, close_modified, rename, unlink, other)
+    let (cr, _cds, _cdn, _wr, clr, _clm, rn, ul, _oth) = l7_es::file_event_stats();
     let total_file_events = cr + clr + rn + ul;
 
     eprintln!(
