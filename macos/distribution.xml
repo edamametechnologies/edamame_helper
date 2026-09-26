@@ -10,6 +10,7 @@
       require-scripts="true"
       allow-external-scripts="no"
       rootVolumeOnly="true"
+      hostArchitectures="arm64,x86_64"
     />
     <!-- Define documents displayed at various steps -->
     <welcome file="welcome.html" mime-type="text/html" />
