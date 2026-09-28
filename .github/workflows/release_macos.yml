@@ -124,13 +124,26 @@ jobs:
         run: |          
           ./macos/notarization.sh ./target/pkg/edamame-helper.pkg
           
-      # Main only (upload to base folder)
+      # Signed build provenance (Sigstore, GitHub artifact attestations).
+      # Verify a download with:
+      #   gh attestation verify <file> --repo edamametechnologies/edamame_helper
+      - name: Attest build provenance
+        if: github.ref == 'refs/heads/main'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ./target/pkg/edamame-helper-macos-*.pkg
+
+      # Main only (upload to base folder). The .sha256 sidecar holds the same
+      # digest as the GitHub release's signed SHA256SUMS.
       - name: Upload helper to AWS
         if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/pkg/edamame-helper-macos-${VERSION}.pkg s3://edamame-helper/macos/edamame-helper-macos-${VERSION}.pkg --acl public-read
+          PKG=edamame-helper-macos-${VERSION}.pkg
+          (cd ./target/pkg && shasum -a 256 "$PKG" > "$PKG.sha256")
+          aws s3 cp ./target/pkg/$PKG s3://edamame-helper/macos/$PKG --acl public-read
+          aws s3 cp ./target/pkg/$PKG.sha256 s3://edamame-helper/macos/$PKG.sha256 --acl public-read
 
       # Main only
       # Check if release exists

@@ -177,13 +177,26 @@ jobs:
           }
           Write-Host "Defender FP gate clean: no detections of EDAMAME binaries in the last 30 minutes."
 
-      # Main only (upload to base folder)
+      # Signed build provenance (Sigstore, GitHub artifact attestations).
+      # Verify a download with:
+      #   gh attestation verify <file> --repo edamametechnologies/edamame_helper
+      - name: Attest build provenance
+        if: github.ref == 'refs/heads/main'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ./target/wix/edamame-helper-windows-*.msi
+
+      # Main only (upload to base folder). The .sha256 sidecar holds the same
+      # digest as the GitHub release's signed SHA256SUMS.
       - name: Upload helper to AWS
         if: github.ref == 'refs/heads/main'
         shell: bash
         run: |
           VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          aws s3 cp ./target/wix/edamame-helper-windows-${VERSION}.msi s3://edamame-helper/windows/edamame-helper-windows-${VERSION}.msi --acl public-read
+          MSI=edamame-helper-windows-${VERSION}.msi
+          (cd ./target/wix && sha256sum "$MSI" > "$MSI.sha256")
+          aws s3 cp ./target/wix/$MSI s3://edamame-helper/windows/$MSI --acl public-read
+          aws s3 cp ./target/wix/$MSI.sha256 s3://edamame-helper/windows/$MSI.sha256 --acl public-read
 
       # Main only
       - name: Check for existing release
