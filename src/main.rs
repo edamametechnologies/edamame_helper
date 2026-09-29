@@ -21,8 +21,8 @@ fn main() -> windows_service::Result<()> {
         envc!("VERGEN_BUILD_TIMESTAMP"),
         branch,
         envc!("VERGEN_GIT_SHA"),
-        envc!("VERGEN_SYSINFO_OS_VERSION"),
-        envc!("VERGEN_SYSINFO_USER")
+        envc!("VERGEN_RUSTC_HOST_TRIPLE"),
+        envc!("EDAMAME_BUILD_USER")
     );
     windows::run(branch, url, release, &info_string)
 }
@@ -40,8 +40,8 @@ fn main() {
         envc!("VERGEN_BUILD_TIMESTAMP"),
         envc!("VERGEN_GIT_BRANCH"),
         envc!("VERGEN_GIT_SHA"),
-        envc!("VERGEN_SYSINFO_OS_VERSION"),
-        envc!("VERGEN_SYSINFO_USER")
+        envc!("VERGEN_RUSTC_HOST_TRIPLE"),
+        envc!("EDAMAME_BUILD_USER")
     );
     start_server(branch, url, release, &info_string);
 }
@@ -59,8 +59,8 @@ fn main() {
         envc!("VERGEN_BUILD_TIMESTAMP"),
         envc!("VERGEN_GIT_BRANCH"),
         envc!("VERGEN_GIT_SHA"),
-        envc!("VERGEN_SYSINFO_OS_VERSION"),
-        envc!("VERGEN_SYSINFO_USER")
+        envc!("VERGEN_RUSTC_HOST_TRIPLE"),
+        envc!("EDAMAME_BUILD_USER")
     );
     start_server(branch, url, release, &info_string);
 }
