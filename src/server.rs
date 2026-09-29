@@ -62,10 +62,24 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
 pub fn stop_server() {
     mdns_stop();
 
+    // Bounded by a wall-clock budget, not a tokio timer: a service stop that
+    // waited on a wedged runtime would hold the Windows service in
+    // STOP_PENDING indefinitely (same class as the 2026-09-28 posture hang).
     edamame_foundation::runtime::block_on(async {
-        match SERVER_CONTROL.lock().await.stop_server().await {
-            Ok(_) => info!("Server stopped"),
-            Err(e) => error!("Server stop error: {}", e),
+        let stop = async {
+            match SERVER_CONTROL.lock().await.stop_server().await {
+                Ok(_) => info!("Server stopped"),
+                Err(e) => error!("Server stop error: {}", e),
+            }
+        };
+        if edamame_foundation::runtime::wall_clock_timeout(
+            std::time::Duration::from_secs(15),
+            stop,
+        )
+        .await
+        .is_err()
+        {
+            error!("Server stop did not complete within 15s; continuing the service stop");
         }
     });
 }
