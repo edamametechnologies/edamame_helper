@@ -72,12 +72,9 @@ pub fn stop_server() {
                 Err(e) => error!("Server stop error: {}", e),
             }
         };
-        if edamame_foundation::runtime::wall_clock_timeout(
-            std::time::Duration::from_secs(15),
-            stop,
-        )
-        .await
-        .is_err()
+        if edamame_foundation::runtime::wall_clock_timeout(std::time::Duration::from_secs(15), stop)
+            .await
+            .is_err()
         {
             error!("Server stop did not complete within 15s; continuing the service stop");
         }
