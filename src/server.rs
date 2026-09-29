@@ -8,6 +8,16 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{error, info};
 
+// This server runs threat-model scripts as root / SYSTEM from the helper's
+// own copy of the model: it must load only models an Ed25519-signed manifest
+// covers. The app reads a helper at or above
+// FIRST_VERIFYING_HELPER_VERSION as a verifying one and warns about an older
+// helper; a build without the feature would break that silently.
+const _: () = assert!(
+    edamame_foundation::model_authenticity::ENFORCED,
+    "edamame_helper must be built with edamame_foundation's model-signatures feature (Cargo.toml)"
+);
+
 lazy_static! {
     static ref SERVER_CONTROL: Arc<Mutex<ServerControl>> =
         Arc::new(Mutex::new(ServerControl::new()));

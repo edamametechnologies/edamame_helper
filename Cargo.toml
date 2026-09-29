@@ -11,9 +11,13 @@ debug = true
 
 [dependencies]
 
+# model-signatures: the threat models whose scripts this helper runs as
+# root / SYSTEM, and every other model it downloads, load only when an
+# Ed25519-signed manifest covers them. The app reads a helper of 2.0.3 or
+# later as a verifying one; src/server.rs refuses to build without it.
 # Local copy in order to allow rapid development/debug
-#edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture", "fim" ] }
-edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = [ "packetcapture", "fim" ] }
+#edamame_foundation = { path = "../edamame_foundation", features = [ "packetcapture", "fim", "model-signatures" ] }
+edamame_foundation = { git = "https://github.com/edamametechnologies/edamame_foundation", branch = "main", features = [ "packetcapture", "fim", "model-signatures" ] }
 # Local copy in order to allow rapid development/debug
 #flodbadd = { path = "../flodbadd", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim", "etw" ] }
 flodbadd = { git = "https://github.com/edamametechnologies/flodbadd", branch = "main", features = [ "packetcapture", "asyncpacketcapture", "endpointsecurity", "fim", "etw" ] }
