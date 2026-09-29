@@ -45,7 +45,15 @@ jobs:
           network_scan: true
           auto_whitelist: true
           auto_whitelist_artifact_name: edamame-auto-whitelist-macos-latest
+          # The release lookup and upload (gh) and the Homebrew tap clone and
+          # push (DEV_GITHUB_TOKEN) come after the action, and the org IP allow
+          # list refuses them until the Hub lists this hosted runner. This
+          # repository is public and answers the default probe at once, which
+          # proves nothing: probe a private repository with a token that can
+          # read it.
           wait_for_api: true
+          wait_repository: edamametechnologies/edamame_core
+          token: ${{ secrets.DEV_GITHUB_TOKEN }}
           checkout: true
           packet_capture: true
           vulnerability_detection: true
