@@ -58,30 +58,44 @@ jobs:
             fi
           fi
 
-          # Default fallback version in case we can't determine the latest
-          VERSION="0.9.24"
-          
           REQUESTED_VERSION="${{ github.event.inputs.version || '' }}"
           if [ -n "$REQUESTED_VERSION" ]; then
             VERSION="$REQUESTED_VERSION"
             echo "Using requested version: $VERSION"
           else
-            # Try to get the latest version using curl and simple text processing.
-            # This avoids using jq for better cross-platform compatibility.
+            # The public releases/latest redirect needs no token, so the org
+            # IP allow list does not apply on these hosted runners (the repo
+            # is public) and there is no API rate limit. Only a redirect to a
+            # tag gives a version; a redirect to /releases is GitHub's "no
+            # published release". Anything else (403, 404, 5xx, no answer) is
+            # a failed lookup. Every case but a version fails the job: the old
+            # fallback to 0.9.24 tested an ancient installer instead.
             echo "Fetching latest release info..."
             LATEST_RELEASE_URL="https://github.com/edamametechnologies/edamame_helper/releases/latest"
-
-            # Get the redirect URL which contains the version.
-            if REDIRECT=$(curl -s -I "$LATEST_RELEASE_URL" | grep -i "^location:" | sed 's/location: *//i' | tr -d '\r'); then
-              if VERSION_TAG=$(echo "$REDIRECT" | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+"); then
-                VERSION="${VERSION_TAG#v}"
-                echo "Found latest version: $VERSION"
-              else
-                echo "Could not parse version from redirect URL, using fallback: $VERSION"
-              fi
-            else
-              echo "Could not determine latest version, using fallback: $VERSION"
+            if ! RESP=$(curl -sS --retry 3 --retry-delay 5 -o /dev/null -w '%{http_code} %{redirect_url}' "$LATEST_RELEASE_URL"); then
+              echo "::error::Latest release lookup failed: no answer from $LATEST_RELEASE_URL"
+              exit 1
             fi
+            CODE="${RESP%% *}"
+            LOCATION="${RESP#* }"
+            case "$CODE $LOCATION" in
+              "302 "*/releases/tag/v*)
+                VERSION="${LOCATION##*/releases/tag/v}"
+                ;;
+              "302 "*/releases)
+                echo "::error::edamame_helper has no published release ($LATEST_RELEASE_URL redirects to the release list)"
+                exit 1
+                ;;
+              *)
+                echo "::error::Latest release lookup failed: HTTP $CODE ${LOCATION} from $LATEST_RELEASE_URL"
+                exit 1
+                ;;
+            esac
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Unexpected latest release tag in $LOCATION"
+              exit 1
+            fi
+            echo "Found latest version: $VERSION"
           fi
           
           # Construct download URLs based on platform and version
