@@ -114,16 +114,23 @@ jobs:
       - name: Packaging and signing of the Helper
         shell: bash
         run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
           ./macos/make-pkg.sh --provisioning-profile /tmp/EDAMAME_Helper.provisionprofile && ./macos/make-distribution-pkg.sh
-          # Final naming with version
-          cp ./target/pkg/edamame-helper.pkg ./target/pkg/edamame-helper-macos-${VERSION}.pkg
 
+      # notarization.sh staples the ticket into edamame-helper.pkg (and fails
+      # on any verdict but Accepted). The versioned copy is the file that is
+      # published (S3, the GitHub release, the Homebrew cask), so it is taken
+      # only after stapling; taken before, as it was, it shipped without the
+      # ticket.
       - name: Notarization
         shell: bash
-        run: |          
+        run: |
+          set -euo pipefail
           ./macos/notarization.sh ./target/pkg/edamame-helper.pkg
-          
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          # Final naming with version
+          cp ./target/pkg/edamame-helper.pkg "./target/pkg/edamame-helper-macos-${VERSION}.pkg"
+          xcrun stapler validate "./target/pkg/edamame-helper-macos-${VERSION}.pkg"
+
       # Signed build provenance (Sigstore, GitHub artifact attestations).
       # Verify a download with:
       #   gh attestation verify <file> --repo edamametechnologies/edamame_helper
