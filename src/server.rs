@@ -35,6 +35,9 @@ lazy_static! {
 }
 
 pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
+    // The helper runs as root / SYSTEM and cannot read the user's settings:
+    // it sends nothing to Sentry until the app's core tells it the user's
+    // crash-report setting (`set_error_reporting` utility order, 2.0.3).
     init_logger("helper", url, release, "", &[]);
     info!("{}", info_string);
 
