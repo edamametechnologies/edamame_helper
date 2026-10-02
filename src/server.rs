@@ -4,8 +4,6 @@ use edamame_foundation::logger::*;
 use envcrypt::envc;
 use flodbadd::mdns::*;
 use lazy_static::lazy_static;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use tracing::{error, info};
 
 // This server runs threat-model scripts as root / SYSTEM from the helper's
@@ -19,8 +17,11 @@ const _: () = assert!(
 );
 
 lazy_static! {
-    static ref SERVER_CONTROL: Arc<Mutex<ServerControl>> =
-        Arc::new(Mutex::new(ServerControl::new()));
+    // No lock around it: `start_server` borrows it for as long as the server
+    // runs, and the Windows Stop control must reach `stop_server` meanwhile.
+    // Behind a mutex the serving call held the guard, the stop waited for it,
+    // and a stop through the SCM never completed.
+    static ref SERVER_CONTROL: ServerControl = ServerControl::new();
 }
 
 lazy_static! {
@@ -54,8 +55,6 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
     edamame_foundation::runtime::block_on(async move {
         // RPC server
         match SERVER_CONTROL
-            .lock()
-            .await
             .start_server(
                 &EDAMAME_SERVER_PEM,
                 &EDAMAME_SERVER_KEY,
@@ -80,7 +79,7 @@ pub fn stop_server() {
     // STOP_PENDING indefinitely (same class as the 2026-09-28 posture hang).
     edamame_foundation::runtime::block_on(async {
         let stop = async {
-            match SERVER_CONTROL.lock().await.stop_server().await {
+            match SERVER_CONTROL.stop_server().await {
                 Ok(_) => info!("Server stopped"),
                 Err(e) => error!("Server stop error: {}", e),
             }
