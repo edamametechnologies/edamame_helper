@@ -71,6 +71,17 @@ jobs:
       - name: Setup signing
         shell: bash
         run: |
+          # The keys, certificates, .p12 bundles and the App Store Connect key
+          # only feed the keychain and the notarytool profile: they live in an
+          # owner-only directory outside the workspace and the OS temp roots,
+          # removed when this step ends, so no later step (or the EDAMAME
+          # Posture gate's content scan) finds secret material on disk next
+          # to the job's GitHub traffic (FP-CI-23).
+          umask 077
+          SIGNING_DIR=$(mktemp -d "$RUNNER_TEMP/signing.XXXXXX")
+          trap 'rm -rf "$SIGNING_DIR"' EXIT
+          cd "$SIGNING_DIR"
+
           # Create certificate files from secrets base64
           echo ${{ secrets.APPLE_DEVELOPMENT_CER }} | base64 --decode > certificate_dev.cer
           echo ${{ secrets.APPLE_DEVELOPMENT_KEY }} | base64 --decode > certificate_dev.key
@@ -105,7 +116,11 @@ jobs:
       - name: Decode ES provisioning profile
         shell: bash
         run: |
-          echo "${{ secrets.APPLE_ES_HELPER_PROVISIONING_PROFILE }}" | base64 --decode > /tmp/EDAMAME_Helper.provisionprofile
+          # Owner-only, outside the OS temp roots; removed after packaging.
+          umask 077
+          PROFILE_DIR=$(mktemp -d "$RUNNER_TEMP/profile.XXXXXX")
+          echo "${{ secrets.APPLE_ES_HELPER_PROVISIONING_PROFILE }}" | base64 --decode > "$PROFILE_DIR/EDAMAME_Helper.provisionprofile"
+          echo "ES_PROVISIONING_PROFILE=$PROFILE_DIR/EDAMAME_Helper.provisionprofile" >> "$GITHUB_ENV"
 
       - name: Build helper and its standalone installer
         shell: bash
@@ -122,7 +137,8 @@ jobs:
       - name: Packaging and signing of the Helper
         shell: bash
         run: |
-          ./macos/make-pkg.sh --provisioning-profile /tmp/EDAMAME_Helper.provisionprofile && ./macos/make-distribution-pkg.sh
+          ./macos/make-pkg.sh --provisioning-profile "$ES_PROVISIONING_PROFILE" && ./macos/make-distribution-pkg.sh
+          rm -rf "$(dirname "$ES_PROVISIONING_PROFILE")"
 
       # notarization.sh staples the ticket into edamame-helper.pkg (and fails
       # on any verdict but Accepted). The versioned copy is the file that is
