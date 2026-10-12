@@ -47,6 +47,7 @@ jobs:
           auto_whitelist_artifact_name: edamame-auto-whitelist-vm-runner-windows
           wait_for_api: true
           checkout: true
+          persist_credentials: false
           packet_capture: true
           vulnerability_detection: true
           vulnerability_detection_interval: "60"

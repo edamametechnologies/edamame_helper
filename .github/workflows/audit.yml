@@ -51,6 +51,7 @@ jobs:
           edamame_pin: ${{ secrets.EDAMAME_POSTURE_PIN }}
           edamame_id: ${{ github.run_id }}-audit-${{ matrix.checks }}
           checkout: true
+          persist_credentials: false
           # With DEV_GITHUB_TOKEN (next step) cargo-deny fetches the git
           # dependencies as edamamedev, and some are private (edamame_core for
           # edamame_cli and edamame_posture). The org IP allow list refuses
