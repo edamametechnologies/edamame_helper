@@ -57,7 +57,7 @@ define stage_helper_app
 	rm -rf "$(2)"; \
 	mkdir -p "$(2)/Contents/MacOS"; \
 	cp "$(1)" "$(2)/Contents/MacOS/edamame_helper"; \
-	cp "$$PROFILE" "$(2)/Contents/embedded.provisionprofile"; \
+	install -m 0644 "$$PROFILE" "$(2)/Contents/embedded.provisionprofile"; \
 	printf '%s\n' \
 		'<?xml version="1.0" encoding="UTF-8"?>' \
 		'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \

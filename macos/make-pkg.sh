@@ -65,7 +65,11 @@ cp ./macos/uninstall.sh "$TARGET/ROOT/$ROOT"
 # embedded provisioning profile inside an app-like bundle. A loose Mach-O in
 # Application Support is still subject to AMFI policy and may be killed on exec.
 if [ -n "$PROVISIONING_PROFILE" ] && [ -f "$PROVISIONING_PROFILE" ]; then
-  cp "$PROVISIONING_PROFILE" "$CONTENTS_DIR/embedded.provisionprofile"
+  # 0644 whatever mode the source has: the release job decodes its signing
+  # material under umask 077, and a 0600 profile in the installed bundle cannot
+  # be read by the installer check (verify-installed-helper.sh) or by users.
+  # A provisioning profile is not secret: it ships inside every bundle.
+  install -m 0644 "$PROVISIONING_PROFILE" "$CONTENTS_DIR/embedded.provisionprofile"
   echo "Provisioning profile embedded in bundle"
 else
   echo "No provisioning profile provided -- bundle will not include ES authorization"
