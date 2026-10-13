@@ -9,10 +9,17 @@ LABEL="system/com.edamametechnologies.edamame-helper"
 /bin/launchctl bootout system "$PLIST" 2>/dev/null || true
 /bin/launchctl unload "$PLIST" 2>/dev/null || true
 
-# Prefer bootstrap + kickstart (current macOS); fall back to load for older systems.
+# Enable before bootstrapping: a label left disabled is loaded but not started.
+/bin/launchctl enable "$LABEL" 2>/dev/null || true
+
+# Prefer bootstrap (current macOS); fall back to load for older systems.
 if /bin/launchctl bootstrap system "$PLIST" 2>/dev/null; then
-  /bin/launchctl enable "$LABEL" 2>/dev/null || true
-  /bin/launchctl kickstart -k "$LABEL" 2>/dev/null || true
+  # RunAtLoad starts the helper. `kickstart` without -k only starts it if it
+  # is not running: `kickstart -k` here killed the instance bootstrap had
+  # just spawned (SIGKILL while it was still being exec'd), and launchd's
+  # respawn throttle then kept the helper down for 10 s while the app,
+  # relaunched by its own postinstall, came up without it (fmba-3, 2.0.7).
+  /bin/launchctl kickstart "$LABEL" 2>/dev/null || true
 else
   /bin/launchctl load -w "$PLIST" 2>/dev/null || /bin/launchctl load "$PLIST" 2>/dev/null || true
 fi
