@@ -42,6 +42,12 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
     init_logger("helper", url, release, "", &[]);
     info!("{}", info_string);
 
+    // launchd starts the helper with 256 open files, too few at a wake or a
+    // network change (EMFILE on fmba-3): raise the soft limit before mDNS,
+    // capture and the gRPC server open anything. Logged once; no-op on
+    // Windows.
+    edamame_foundation::open_files_limit::raise_open_files_limit();
+
     // Must be after sentry
     edamame_foundation::runtime::init();
 
