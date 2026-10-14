@@ -54,20 +54,31 @@ pub fn start_server(branch: &str, url: &str, release: &str, info_string: &str) {
     let branch = branch.to_string();
     edamame_foundation::runtime::block_on(async move {
         // RPC server
-        match SERVER_CONTROL
-            .start_server(
-                &EDAMAME_SERVER_PEM,
-                &EDAMAME_SERVER_KEY,
-                &EDAMAME_CLIENT_CA_PEM,
-                &EDAMAME_SERVER,
-                &branch,
-            )
-            .await
-        {
-            Ok(_) => info!("Server started"),
-            Err(e) => error!("Server start error: {}", e),
-        }
+        serve_logged(SERVER_CONTROL.start_server(
+            &EDAMAME_SERVER_PEM,
+            &EDAMAME_SERVER_KEY,
+            &EDAMAME_CLIENT_CA_PEM,
+            &EDAMAME_SERVER,
+            &branch,
+        ))
+        .await
     });
+}
+
+/// Run the RPC server to its end, logging its start before it serves and its
+/// stop, or its failure, once it returns: `start_server` returns only when
+/// the server stops (the "Server started" logged on its return used to
+/// appear at shutdown).
+async fn serve_logged<F, E>(server: F)
+where
+    F: std::future::Future<Output = Result<(), E>>,
+    E: std::fmt::Display,
+{
+    info!("Server starting");
+    match server.await {
+        Ok(()) => info!("Server stopped"),
+        Err(e) => error!("Server error: {}", e),
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -91,4 +102,77 @@ pub fn stop_server() {
             error!("Server stop did not complete within 15s; continuing the service stop");
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::mpsc::{channel, Receiver, Sender};
+
+    /// Records the message of every event logged on its thread.
+    struct Recorder(Sender<String>);
+
+    impl tracing::Subscriber for Recorder {
+        fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+            true
+        }
+        fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+            tracing::span::Id::from_u64(1)
+        }
+        fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+        fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+        fn event(&self, event: &tracing::Event<'_>) {
+            struct Message(String);
+            impl tracing::field::Visit for Message {
+                fn record_debug(
+                    &mut self,
+                    field: &tracing::field::Field,
+                    value: &dyn std::fmt::Debug,
+                ) {
+                    if field.name() == "message" {
+                        self.0 = format!("{value:?}");
+                    }
+                }
+            }
+            let mut message = Message(String::new());
+            event.record(&mut message);
+            let _ = self.0.send(message.0);
+        }
+        fn enter(&self, _: &tracing::span::Id) {}
+        fn exit(&self, _: &tracing::span::Id) {}
+    }
+
+    /// Run `serve_logged` over a server that marks when it serves and ends
+    /// with `outcome`; the server lines and that mark, in order.
+    fn lines_around_serving(outcome: Result<(), &'static str>) -> Vec<String> {
+        let (sender, receiver): (Sender<String>, Receiver<String>) = channel();
+        let serving = sender.clone();
+        tracing::subscriber::with_default(Recorder(sender), || {
+            tokio::runtime::Builder::new_current_thread()
+                .build()
+                .unwrap()
+                .block_on(serve_logged(async move {
+                    serving.send("serving".to_string()).unwrap();
+                    outcome
+                }))
+        });
+        receiver
+            .try_iter()
+            .filter(|line| line == "serving" || line.starts_with("Server"))
+            .collect()
+    }
+
+    /// `start_server` returns when the server stops: the start is logged
+    /// before it serves, the stop (or the failure) after it returns.
+    #[test]
+    fn the_server_start_is_logged_before_serving_and_its_end_after() {
+        assert_eq!(
+            lines_around_serving(Ok(())),
+            ["Server starting", "serving", "Server stopped"]
+        );
+        assert_eq!(
+            lines_around_serving(Err("address in use")),
+            ["Server starting", "serving", "Server error: address in use"]
+        );
+    }
 }
