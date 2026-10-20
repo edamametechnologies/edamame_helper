@@ -137,6 +137,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: repo
+          persist-credentials: false
 
       - name: Checkout edamame_supply_chain
         uses: actions/checkout@v4
@@ -144,6 +145,7 @@ jobs:
           repository: edamametechnologies/edamame_supply_chain
           path: edamame_supply_chain
           ref: main
+          persist-credentials: false
 
       - name: Verify deny.toml matches canonical source
         run: |
