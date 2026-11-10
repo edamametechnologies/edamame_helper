@@ -2,6 +2,11 @@ name: Release Helper for Windows on GitHub / AWS
 
 on:
   workflow_dispatch:
+    inputs:
+      assemble_as_prerelease:
+        description: 'Create the GitHub release as a prerelease, so that releases/latest keeps answering the previous version while this version is assembled; the caller then publishes it (gh release edit <tag> --prerelease=false --latest). release_all.sh passes true once it carries that publish step. Default: the release is the latest as soon as it is created, as before.'
+        type: boolean
+        default: false
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
@@ -211,18 +216,6 @@ jobs:
         with:
           subject-path: ./target/wix/edamame-helper-windows-*.msi
 
-      # Main only (upload to base folder). The .sha256 sidecar holds the same
-      # digest as the GitHub release's signed SHA256SUMS.
-      - name: Upload helper to AWS
-        if: github.ref == 'refs/heads/main'
-        shell: bash
-        run: |
-          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
-          MSI=edamame-helper-windows-${VERSION}.msi
-          (cd ./target/wix && sha256sum "$MSI" > "$MSI.sha256")
-          aws s3 cp ./target/wix/$MSI s3://edamame-helper/windows/$MSI --acl public-read
-          aws s3 cp ./target/wix/$MSI.sha256 s3://edamame-helper/windows/$MSI.sha256 --acl public-read
-
       # Main only
       - name: Check for existing release
         if: github.ref == 'refs/heads/main'
@@ -256,6 +249,15 @@ jobs:
           REPO: ${{ github.repository }}
 
       # Main only
+      # With the `assemble_as_prerelease` input the release is created as a
+      # prerelease: several workflows assemble one version, and the public
+      # releases/latest redirect, which every installer resolves, must not
+      # point at it before all its assets and SHA256SUMS exist. The caller
+      # (edamame_app/release_all.sh) then publishes it with
+      #   gh release edit <tag> --prerelease=false --latest
+      # Without the input (the default, and a manual run) the release is the
+      # latest as soon as it is created, as before. A release that already
+      # exists keeps its flag: no step passes --prerelease or --latest to it.
       - name: Create release if it doesn't exist
         if: github.ref == 'refs/heads/main' && steps.get_release.outputs.exists != 'true'
         # This populates steps.get_release.outputs.upload_url with the upload_url of the release
@@ -267,7 +269,7 @@ jobs:
           tag_name: ${{ steps.get_release.outputs.tag }}
           release_name: Release ${{ steps.get_release.outputs.tag }}
           draft: false
-          prerelease: false
+          prerelease: ${{ inputs.assemble_as_prerelease }}
 
       # Update the tag if it exists and points to a different commit
       - name: Update the tag if it exists and points to a different commit
@@ -336,9 +338,64 @@ jobs:
           Write-Host "Resolved Chocolatey version: $CHOCO_VERSION"
           echo "choco_version=$CHOCO_VERSION" >> $env:GITHUB_OUTPUT
 
+      # Main only - a published release's assets are IMMUTABLE (same guard as
+      # edamame_cli's release_others.yml, "Check whether the release already
+      # carries this asset").
+      #
+      # The upload below used to replace the asset on every run (`--clobber`),
+      # and the S3 copy with it. The .msi is not bit-reproducible (build,
+      # signature timestamp), so a re-run of this workflow put different bytes
+      # under a name whose digest SHA256SUMS had already recorded.
+      #
+      # An asset the release already carries is kept and its upload skipped;
+      # S3 then receives the published .msi (see "Fetch the published .msi
+      # from the release"). To genuinely replace a bad asset, delete it from
+      # the release (or bump the version): an explicit act, not a side effect
+      # of a re-run.
+      - name: Check whether the release already carries this asset
+        if: github.ref == 'refs/heads/main'
+        id: asset_check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.get_release.outputs.version }}"
+          TAG="${{ steps.get_release.outputs.tag }}"
+          ASSET_NAME="edamame-helper-windows-${VERSION}.msi"
+          echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ steps.get_release.outputs.exists }}" != "true" ]]; then
+            echo "Release ${TAG} is new; asset will be uploaded."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Same discipline as `Check for existing release`: never turn a gh
+          # failure into "not present", or a transient API error would replace
+          # a published asset.
+          set +e
+          names=$(gh release view "$TAG" --repo "${{ github.repository }}" --json assets --jq '.assets[].name' 2>&1)
+          rc=$?
+          set -e
+          if [[ $rc -ne 0 ]]; then
+            echo "ERROR: could not list assets of ${TAG} (rc=${rc}):" >&2
+            echo "${names}" >&2
+            echo "ERROR: refusing to guess -- replacing a published asset breaks pinned checksums." >&2
+            exit 1
+          fi
+
+          if grep -qxF "${ASSET_NAME}" <<<"${names}"; then
+            echo "Asset ${ASSET_NAME} is already published on ${TAG}; keeping the published file."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Asset ${ASSET_NAME} not yet on ${TAG}; will upload."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # Main only - use an explicit absolute path and verify the asset exists on the release.
       - name: Upload asset to release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.asset_check.outputs.exists != 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -374,6 +431,51 @@ jobs:
             echo "ERROR: release asset verification failed: $EXPECTED_ASSET"
             exit 1
           fi
+
+      # S3 must serve the bytes the release carries. When the release already
+      # had this .msi (its upload was skipped above), take the published file:
+      # the AWS step below uploads it instead of the .msi this run built.
+      - name: Fetch the published .msi from the release
+        if: github.ref == 'refs/heads/main' && steps.asset_check.outputs.exists == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.get_release.outputs.tag }}"
+          MSI_NAME="${{ steps.asset_check.outputs.asset_name }}"
+          PUBLISHED_DIR="${RUNNER_TEMP}/published"
+          mkdir -p "$PUBLISHED_DIR"
+          rm -f "${PUBLISHED_DIR}/${MSI_NAME}"
+          gh release download "$TAG" --repo "${{ github.repository }}" --pattern "$MSI_NAME" --dir "$PUBLISHED_DIR"
+          if [[ ! -f "${PUBLISHED_DIR}/${MSI_NAME}" || ! -s "${PUBLISHED_DIR}/${MSI_NAME}" ]]; then
+            echo "ERROR: ${MSI_NAME} was not downloaded from release ${TAG}" >&2
+            exit 1
+          fi
+          echo "Fetched the published ${MSI_NAME} (sha256 $(sha256sum "${PUBLISHED_DIR}/${MSI_NAME}" | awk '{print $1}'))"
+
+      # Main only (upload to base folder). The .sha256 sidecar holds the same
+      # digest as the GitHub release's signed SHA256SUMS.
+      # Runs after the release steps so that S3 serves the bytes the release
+      # carries: the .msi fetched from the release when it was already
+      # published there, the one this run built and uploaded otherwise.
+      - name: Upload helper to AWS
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          VERSION=$(grep '^version =' ./Cargo.toml | awk '{print $3}' | tr -d '"')
+          MSI=edamame-helper-windows-${VERSION}.msi
+          MSI_DIR=./target/wix
+          if [[ "${{ steps.asset_check.outputs.exists }}" == "true" ]]; then
+            MSI_DIR="${RUNNER_TEMP}/published"
+          fi
+          if [[ ! -f "$MSI_DIR/$MSI" || ! -s "$MSI_DIR/$MSI" ]]; then
+            echo "ERROR: no .msi to publish at ${MSI_DIR}/${MSI}" >&2
+            exit 1
+          fi
+          (cd "$MSI_DIR" && sha256sum "$MSI" > "$MSI.sha256")
+          aws s3 cp "$MSI_DIR/$MSI" s3://edamame-helper/windows/$MSI --acl public-read
+          aws s3 cp "$MSI_DIR/$MSI.sha256" s3://edamame-helper/windows/$MSI.sha256 --acl public-read
 
       # Publish to Chocolatey with resolved version (may include .N suffix)
       - name: Publish to Chocolatey
@@ -420,6 +522,12 @@ jobs:
           # `choco install` for everyone that way. Chocolatey versions are
           # immutable, so publish the next revision suffix with the checksum
           # of the live asset instead (as edamame_cli's release_others.yml).
+          #
+          # The release asset is now immutable ("Check whether the release
+          # already carries this asset"): a re-run keeps the published MSI
+          # and its SHA256, so a new build under the same version needs the
+          # asset deleted from the release by hand first. The logic stays for
+          # that case.
           if ("${{ secrets.CHOCOLATEY_API_KEY }}" -ne "") {
             $published = $false
             for ($attempt = 0; $attempt -lt 20; $attempt++) {
