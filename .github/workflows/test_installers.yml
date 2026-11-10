@@ -7,9 +7,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Specific release version to test (without leading v). Defaults to latest.
+        description: >-
+          Release to test: "latest" (the default, and what the schedule
+          tests), a version (2.3.2) or its tag (v2.3.2). A version is
+          downloaded by its tag, without resolving releases/latest: a release
+          can then be tested before it is the latest one, while it is still a
+          prerelease.
         required: false
         type: string
+        default: latest
 
 # Auto cancel previous runs if they were not completed.
 concurrency:
@@ -44,6 +50,8 @@ jobs:
       - name: Download installer from GitHub releases
         id: download
         continue-on-error: true
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           # Install curl if not present
           if [ "${{ matrix.platform }}" == "macos" ]; then
@@ -58,9 +66,16 @@ jobs:
             fi
           fi
 
-          REQUESTED_VERSION="${{ github.event.inputs.version || '' }}"
-          if [ -n "$REQUESTED_VERSION" ]; then
-            VERSION="$REQUESTED_VERSION"
+          # A version given as input is the one to test: nothing is resolved.
+          # (Empty on the schedule, which tests the latest release.)
+          REQUESTED="${REQUESTED_VERSION:-latest}"
+          REQUESTED="${REQUESTED#v}"
+          if [ "$REQUESTED" != "latest" ]; then
+            if ! [[ "$REQUESTED" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::version must be latest, X.Y.Z or vX.Y.Z, got '${REQUESTED_VERSION}'"
+              exit 1
+            fi
+            VERSION="$REQUESTED"
             echo "Using requested version: $VERSION"
           else
             # The public releases/latest redirect needs no token, so the org
