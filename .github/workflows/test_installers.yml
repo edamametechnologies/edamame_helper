@@ -306,25 +306,6 @@ jobs:
         continue-on-error: true
         shell: pwsh
 
-      - name: Slack alerts
-        if: >-
-          always() &&
-          ((matrix.platform == 'macos' && (steps.download.outcome != 'success' || steps.install_macos.outcome != 'success' || steps.verify_macos.outcome != 'success' || steps.run_macos.outcome != 'success')) ||
-          (matrix.platform == 'windows' && (steps.download.outcome != 'success' || steps.install_windows.outcome != 'success' || steps.verify_windows.outcome != 'success' || steps.run_windows.outcome != 'success')))
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          channel-id: 'C072J0U9TH7'
-          slack-message: |
-            *Helper Installer Test Results for ${{ github.repository }} (Platform: ${{ matrix.platform }})*:
-            - Download: ${{ steps.download.outcome == 'success' && '✅ Success' || '❌ Failed' }}
-            - Installation: ${{ ((matrix.platform == 'macos' && steps.install_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.install_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
-            - Verification: ${{ ((matrix.platform == 'macos' && steps.verify_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.verify_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
-            - Execution: ${{ ((matrix.platform == 'macos' && steps.run_macos.outcome == 'success') || (matrix.platform == 'windows' && steps.run_windows.outcome == 'success')) && '✅ Success' || '❌ Failed' }}
-            More details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        continue-on-error: true
-
       - name: Fail job if tests failed
         if: >-
           always() &&
@@ -335,3 +316,12 @@ jobs:
           exit 1
         continue-on-error: false
         shell: bash 
+
+  notify:
+    name: Slack alert
+    needs: [test-installers]
+    if: always() && github.event_name != 'pull_request'
+    uses: edamametechnologies/.github/.github/workflows/slack-notify.yml@main
+    with:
+      results: ${{ toJSON(needs) }}
+    secrets: inherit
